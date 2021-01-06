@@ -14,7 +14,8 @@
 #include <malloc.h>
 #include <memory.h>
 #include <tchar.h>
-#include <iostream>
+#include <fstream>
+#include <vector>
 
 // Direct3D 11 Header Files
 #include <d3d11_1.h>

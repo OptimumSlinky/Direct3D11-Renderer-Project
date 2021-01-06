@@ -21,6 +21,7 @@ struct ConstantBuffer
     XMMATRIX mProjection;
 };
 
+
 // Global defines
 #define MAX_LOADSTRING 100
 
@@ -140,6 +141,8 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
     return S_OK;
 }
 
+
+// Shader compile function
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
     HRESULT hr = S_OK;
@@ -162,6 +165,7 @@ HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCS
     return S_OK;
 }
 
+// Create Direct3D device and swap chain
 HRESULT InitDevice()
 {
     HRESULT hr = S_OK;
@@ -310,16 +314,33 @@ HRESULT InitDevice()
 
     // TODO: compile vertex shaders
     ID3DBlob* pVSBlob = nullptr;
-    hr = CompileShaderFromFile(L"DEV4_VS.hlsl", nullptr, nullptr, &pVSBlob);
+    hr = CompileShaderFromFile(L"DEV4_VS.hlsl", "VS", "vs_4_0", &pVSBlob);
     if (FAILED (hr))
     {
         MessageBox(nullptr, L"Shader cannot be found. Verify file path and location.", L"Error", MB_OK);
 
         return hr;
     }
+    
     // TODO: create vertex shaders
+    hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
+    pVSBlob->Release();
+    if (FAILED (hr))
+    {
+        return hr;
+    }
+
     // TODO: define input layout
+    D3D11_INPUT_ELEMENT_DESC layout[] =
+    {
+        { "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+        { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+    };
+    UINT numberElements = ARRAYSIZE(layout);
+
     // TODO: create and set input layout
+    g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+
     // TODO: compile pixel shaders
     // TODO: create pixel shaders
     // TODO: create vertex buffer
