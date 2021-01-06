@@ -7,6 +7,20 @@
 
 using namespace DirectX;
 
+// Structures
+struct SimpleVertex
+{
+    XMFLOAT3 position;
+    XMFLOAT4 color;
+};
+
+struct ConstantBuffer
+{
+    XMMATRIX mWorld;
+    XMMATRIX mView;
+    XMMATRIX mProjection;
+};
+
 // Global defines
 #define MAX_LOADSTRING 100
 
@@ -30,6 +44,11 @@ ID3D11VertexShader*     g_pVertexShader = nullptr;
 ID3D11PixelShader*      g_pPixelShader = nullptr;
 ID3D11InputLayout*      g_pVertexLayout = nullptr;
 ID3D11Buffer*           g_pVertexBuffer = nullptr;
+ID3D11Buffer*           g_pIndexBuffer = nullptr;
+ID3D11Buffer*           g_pConstantBuffer = nullptr;
+XMMATRIX                g_World;
+XMMATRIX                g_View;
+XMMATRIX                g_Projection;
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -40,6 +59,7 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
 void CleanupDevice();
 void Render();
+
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -102,8 +122,8 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
         return E_FAIL;
 
     // Create window
-    g_hInst = hInstance; // Store instance handle in our global variable
-    RECT rc = { 0, 0, 1280, 720 };
+    g_hInst = hInstance;
+    RECT rc = { 0, 0, 1280, 720 }; // Set window size
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
     g_hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
@@ -116,6 +136,28 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 
     ShowWindow(g_hWnd, nCmdShow);
     UpdateWindow(g_hWnd);
+
+    return S_OK;
+}
+
+HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+{
+    HRESULT hr = S_OK;
+    DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+    
+    ID3DBlob* pErrorBlob = nullptr;
+    hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
+        dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
+    if (FAILED(hr))
+    {
+        if (pErrorBlob)
+        {
+            OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+            pErrorBlob->Release();
+        }
+        return hr;
+    }
+    if (pErrorBlob) pErrorBlob->Release();
 
     return S_OK;
 }
@@ -265,6 +307,23 @@ HRESULT InitDevice()
     vp.TopLeftX = 0;
     vp.TopLeftY = 0;
     g_pImmediateContext->RSSetViewports(1, &vp);
+
+    // TODO: compile vertex shaders
+    ID3DBlob* pVSBlob = nullptr;
+    hr = CompileShaderFromFile(L"DEV4_VS.hlsl", nullptr, nullptr, &pVSBlob);
+    if (FAILED (hr))
+    {
+        MessageBox(nullptr, L"Shader cannot be found. Verify file path and location.", L"Error", MB_OK);
+
+        return hr;
+    }
+    // TODO: create vertex shaders
+    // TODO: define input layout
+    // TODO: create and set input layout
+    // TODO: compile pixel shaders
+    // TODO: create pixel shaders
+    // TODO: create vertex buffer
+    // TODO: set vertex buffer
 
     return S_OK;
 }
