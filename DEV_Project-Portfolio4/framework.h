@@ -22,3 +22,19 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <directxcolors.h>
+
+// D3D11 library dependencies
+#pragma comment(lib, "d3d11.lib")
+#pragma comment(lib, "dxgi.lib")
+#pragma comment(lib, "d3dcompiler.lib")
+
+// Used to safely release a COM object and set the COM pointer to nullptr even if it has already been released before
+template<typename T>
+inline void SafeRelease(T& ptr)
+{
+    if (ptr != nullptr)
+    {
+        ptr->Release();
+        ptr = nullptr;
+    }
+}
