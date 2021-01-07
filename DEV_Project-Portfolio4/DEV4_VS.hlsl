@@ -9,19 +9,25 @@ cbuffer ConstantBuffer : register(b0)
 // Input structures
 struct VS_Input
 {
-    float4 position : POSITION;
-    float4 color : COLOR0;
+    float4 positionL : POSITION;
+    float4 color : COLOR;
     // float3 normal : NORMAL;
-    // float2 texture : TEXCOORD0;
+    // float2 texture : TEXCOORD;
+};
+
+struct VS_Output
+{
+    float4 positionH : SV_POSITION;
+    float4 color : COLOR;
 };
 
 // Vertex shader
-VS_Input VertexShader( VS_Input input ) : SV_POSITION
+VS_Output VS_Main( VS_Input input ) : SV_POSITION
 {
-    VS_Input output = (VS_Input)0;
-    output.position = mul(input.position, world);
-    output.position = mul(input.position, view);
-    output.position = mul(input.position, projection);
+    VS_Output output = (VS_Output)0;
+    output.positionH = mul(input.positionL, world);
+    output.positionH = mul(output.positionH, view);
+    output.positionH = mul(output.positionH, projection);
     output.color = input.color;
     return output;
 }
