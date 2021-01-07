@@ -428,7 +428,7 @@ HRESULT InitDevice()
     };
    
     bd.Usage = D3D11_USAGE_DEFAULT;
-    bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices needed for 12 triangles in a triangle list
+    bd.ByteWidth = sizeof(cubeIndices);        // 36 vertices needed for 12 triangles in a triangle list
     bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
     bd.CPUAccessFlags = 0;
     InitData.pSysMem = cubeIndices;
@@ -437,7 +437,7 @@ HRESULT InitDevice()
         return hr;
 
     // Set index buffer
-    g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+    g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
     // Set primitive topology
     g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -457,7 +457,7 @@ HRESULT InitDevice()
     g_World = XMMatrixIdentity();
     
     // Initialize view matrix
-    XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -10.0f, 0.0f);
+    XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -3.0f, 0.0f);
     XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
     g_View = XMMatrixLookAtLH(Eye, At, Up);
