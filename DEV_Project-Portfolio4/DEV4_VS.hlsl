@@ -22,7 +22,7 @@ struct VS_Output
 };
 
 // Vertex shader
-VS_Output VS_Main( VS_Input input ) : SV_POSITION
+VS_Output VS_Main( VS_Input input )
 {
     VS_Output output = (VS_Output)0;
     output.positionH = mul(input.positionL, world);

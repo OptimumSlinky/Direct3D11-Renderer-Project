@@ -7,6 +7,44 @@
 
 using namespace DirectX;
 
+// Global variables
+LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
+LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
+const LONG g_WindowWidth = 1280;
+const LONG g_WindowHeight = 720;
+const BOOL g_EnableVSync = TRUE;
+
+// Direct3D global variables
+HINSTANCE               g_hInst = nullptr;
+HWND                    g_hWnd = nullptr;
+D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
+D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
+
+// Direct3D device and swap chain
+ID3D11Device* g_pd3dDevice = nullptr;
+ID3D11Device1* g_pd3dDevice1 = nullptr;
+ID3D11DeviceContext* g_pImmediateContext = nullptr;
+ID3D11DeviceContext1* g_pImmediateContext1 = nullptr;
+IDXGISwapChain* g_pSwapChain = nullptr;
+IDXGISwapChain1* g_pSwapChain1 = nullptr;
+
+// Essentials for back buffer and viewing
+ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
+ID3D11VertexShader* g_pVertexShader = nullptr;
+ID3D11PixelShader* g_pPixelShader = nullptr;
+ID3D11InputLayout* g_pVertexLayout = nullptr;
+
+// Buffers
+ID3D11Buffer* g_pVertexBuffer = nullptr;
+ID3D11Buffer* g_pIndexBuffer = nullptr;
+ID3D11Buffer* g_pConstantBuffer = nullptr;
+
+// Matrices 
+XMMATRIX                g_World;
+XMMATRIX                g_View;
+XMMATRIX                g_Projection;
+
+
 // Structures
 struct SimpleVertex
 {
@@ -21,35 +59,6 @@ struct ConstantBuffer
     XMMATRIX mProjection;
 };
 
-
-// Global defines
-#define MAX_LOADSTRING 100
-
-// Global variables
-WCHAR szTitle[MAX_LOADSTRING] = L"Project&Portfolio4";      // The title bar text
-WCHAR szWindowClass[MAX_LOADSTRING] = L"RenderingWindow";   // the main window class name
-
-// Direct3D global variables
-HINSTANCE               g_hInst = nullptr;
-HWND                    g_hWnd = nullptr;
-D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
-D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
-ID3D11Device*           g_pd3dDevice = nullptr;
-ID3D11Device1*          g_pd3dDevice1 = nullptr;
-ID3D11DeviceContext*    g_pImmediateContext = nullptr;
-ID3D11DeviceContext1*   g_pImmediateContext1 = nullptr;
-IDXGISwapChain*         g_pSwapChain = nullptr;
-IDXGISwapChain1*        g_pSwapChain1 = nullptr;
-ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
-ID3D11VertexShader*     g_pVertexShader = nullptr;
-ID3D11PixelShader*      g_pPixelShader = nullptr;
-ID3D11InputLayout*      g_pVertexLayout = nullptr;
-ID3D11Buffer*           g_pVertexBuffer = nullptr;
-ID3D11Buffer*           g_pIndexBuffer = nullptr;
-ID3D11Buffer*           g_pConstantBuffer = nullptr;
-XMMATRIX                g_World;
-XMMATRIX                g_View;
-XMMATRIX                g_Projection;
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -117,16 +126,16 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
     wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
     wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
     wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_DEVPROJECTPORTFOLIO4);
-    wcex.lpszClassName = szWindowClass;
+    wcex.lpszClassName = g_WindowClassName;
     wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
     if (!RegisterClassEx(&wcex))
         return E_FAIL;
 
     // Create window
     g_hInst = hInstance;
-    RECT rc = { 0, 0, 1280, 720 }; // Set window size
+    RECT rc = { 0, 0, g_WindowWidth, g_WindowHeight }; // Set window size
     AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, FALSE);
-    g_hWnd = CreateWindow(szWindowClass, szTitle, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
+    g_hWnd = CreateWindow(g_WindowClassName, g_WindowName, WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX,
         CW_USEDEFAULT, CW_USEDEFAULT, rc.right - rc.left, rc.bottom - rc.top, nullptr, nullptr, hInstance,
         nullptr);
 
@@ -314,19 +323,19 @@ HRESULT InitDevice()
 
     // TODO: compile vertex shaders
     ID3DBlob* pVSBlob = nullptr;
-    hr = CompileShaderFromFile(L"DEV4_VS.hlsl", "VS", "vs_4_0", &pVSBlob);
+    hr = CompileShaderFromFile(L"DEV4_VS.hlsl", "VS_Main", "vs_5_0", &pVSBlob);
     if (FAILED (hr))
     {
-        MessageBox(nullptr, L"Shader cannot be found. Verify file path and location.", L"Error", MB_OK);
+        MessageBox(nullptr, L"Shader file cannot be found. Verify file path and location.", L"Error", MB_OK);
 
         return hr;
     }
     
     // TODO: create vertex shaders
     hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
-    pVSBlob->Release();
     if (FAILED (hr))
     {
+        pVSBlob->Release();
         return hr;
     }
 
@@ -338,13 +347,123 @@ HRESULT InitDevice()
     };
     UINT numberElements = ARRAYSIZE(layout);
 
-    // TODO: create and set input layout
+    // TODO: create input layout
+    hr = g_pd3dDevice->CreateInputLayout(layout, numberElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
+    pVSBlob->Release();
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+
+    // Set input layout
     g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
 
     // TODO: compile pixel shaders
+    ID3DBlob* pPSBlob = nullptr;
+    hr = CompileShaderFromFile(L"DEV4_PS.hlsl", "PS_Main", "ps_5_0", &pPSBlob);
+    if (FAILED(hr))
+    {
+        MessageBox(nullptr, L"Shader file cannot be found. Verify file path and location.", L"Error", MB_OK);
+
+        return hr;
+    }
+
     // TODO: create pixel shaders
+    hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
+    pPSBlob->Release();
+    if (FAILED (hr))
+    {
+        return hr;
+    }
+
     // TODO: create vertex buffer
+    SimpleVertex cubeVertices[] =
+    {
+        { XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f) },
+        { XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT4(0.0f, 1.0f, 1.0f, 1.0f) },
+        { XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 0.0f, 1.0f, 1.0f) },
+        { XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT4(1.0f, 1.0f, 0.0f, 1.0f) },
+        { XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f) },
+        { XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f) },
+    };
+    D3D11_BUFFER_DESC bd = {};
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(SimpleVertex) * 8;
+    bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+
+    D3D11_SUBRESOURCE_DATA InitData = {};
+    InitData.pSysMem = cubeVertices;
+    hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
+    if (FAILED(hr))
+        return hr;
+
     // TODO: set vertex buffer
+    UINT stride = sizeof(SimpleVertex);
+    UINT offset = 0;
+    g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+
+    // Create index buffer
+    WORD cubeIndices[] =
+    {
+        3,1,0,
+        2,1,3,
+
+        0,5,4,
+        1,5,0,
+
+        3,4,7,
+        0,4,3,
+
+        1,6,5,
+        2,6,1,
+
+        2,7,6,
+        3,7,2,
+
+        6,4,5,
+        7,4,6,
+    };
+   
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(WORD) * 36;        // 36 vertices needed for 12 triangles in a triangle list
+    bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    bd.CPUAccessFlags = 0;
+    InitData.pSysMem = cubeIndices;
+    hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
+    if (FAILED(hr))
+        return hr;
+
+    // Set index buffer
+    g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R32_UINT, 0);
+
+    // Set primitive topology
+    g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+    // Create constant buffer
+    bd.Usage = D3D11_USAGE_DEFAULT;
+    bd.ByteWidth = sizeof(ConstantBuffer);
+    bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    bd.CPUAccessFlags = 0;
+    hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pConstantBuffer);
+    if (FAILED (hr))
+    {
+        return hr;
+    }
+
+    // Initialize world matrix
+    g_World = XMMatrixIdentity();
+    
+    // Initialize view matrix
+    XMVECTOR Eye = XMVectorSet(0.0f, 4.0f, -10.0f, 0.0f);
+    XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
+    g_View = XMMatrixLookAtLH(Eye, At, Up);
+
+    // Initialize projection matrix
+    g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
 
     return S_OK;
 }
@@ -416,8 +535,39 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void Render()
 {
+    // Update time
+    static float t = 0.0f;
+    if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+    {
+        t += (float)XM_PI * 0.0125f;
+    }
+    else
+    {
+        static ULONGLONG timeStart = 0;
+        ULONGLONG timeCur = GetTickCount64();
+        if (timeStart == 0)
+            timeStart = timeCur;
+        t = (timeCur - timeStart) / 1000.0f;
+    }
+
+    // Animate cube
+    g_World = XMMatrixRotationY(t);
+
     // Clear the back buffer 
     g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+
+    // Update 
+    ConstantBuffer cb;
+    cb.mWorld = XMMatrixTranspose(g_World);
+    cb.mView = XMMatrixTranspose(g_View);
+    cb.mProjection = XMMatrixTranspose(g_Projection);
+    g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0 );
+
+    // Render triangles
+    g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
+    g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
+    g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
+    g_pImmediateContext->DrawIndexed(36, 0, 0);
 
     // Present back buffer information to the front buffer (user viewpoint)
     g_pSwapChain->Present(0, 0);
