@@ -22,6 +22,7 @@
 #include <d3dcompiler.h>
 #include <directxmath.h>
 #include <directxcolors.h>
+#include "DDSTextureLoader.h" // For texture loading
 
 // D3D11 library dependencies
 #pragma comment(lib, "d3d11.lib")

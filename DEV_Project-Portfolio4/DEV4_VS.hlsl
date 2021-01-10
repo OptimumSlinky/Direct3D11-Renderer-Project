@@ -6,19 +6,24 @@ cbuffer ConstantBuffer : register(b0)
     matrix projection;
 }
 
+Texture2D diffuseTexture : register(t0);
+SamplerState linearSampler : register(s0);
+
 // Input structures
 struct VS_Input
 {
     float4 positionL : POSITION;
     float4 color : COLOR;
-    // float3 normal : NORMAL;
-    // float2 texture : TEXCOORD;
+    float3 normal : NORMAL;
+    float2 texture : TEXTURECOORD0;
 };
 
 struct VS_Output
 {
     float4 positionH : SV_POSITION;
     float4 color : COLOR;
+    float3 normal : NORMAL;
+    float texture : TEXTURECOORD0;
 };
 
 // Vertex shader
@@ -28,6 +33,7 @@ VS_Output VS_Main( VS_Input input )
     output.positionH = mul(input.positionL, world);
     output.positionH = mul(output.positionH, view);
     output.positionH = mul(output.positionH, projection);
-    output.color = input.color;
+    output.normal = mul(float4(input.normal, 1), world).xyz;
+    output.texture = input.texture;
     return output;
 }
