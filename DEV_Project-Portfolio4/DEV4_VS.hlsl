@@ -15,7 +15,7 @@ struct VS_Input
     float4 positionL : POSITION;
     float4 color : COLOR;
     float3 normal : NORMAL;
-    float2 texture : TEXTURECOORD0;
+    float2 texture : TEXCOORD0;
 };
 
 struct VS_Output
@@ -23,7 +23,7 @@ struct VS_Output
     float4 positionH : SV_POSITION;
     float4 color : COLOR;
     float3 normal : NORMAL;
-    float texture : TEXTURECOORD0;
+    float texture : TEXCOORD0;
 };
 
 // Vertex shader

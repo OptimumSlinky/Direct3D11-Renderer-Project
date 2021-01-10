@@ -16,7 +16,7 @@ struct PS_Input
     float4 positionL : SV_POSITION;
     float4 color : COLOR;
     float3 normal : NORMAL;
-    float2 texture : TEXTURECOORD1;
+    float2 texture : TEXCOORD1;
 };
 
 // Pixel Shader 
