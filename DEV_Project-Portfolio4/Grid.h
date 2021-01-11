@@ -1,6 +1,9 @@
 #pragma once
 #include "framework.h"
 
+using namespace DirectX;
+using namespace std;
+
 // Grid vertex structure
 struct GridVertex
 {
