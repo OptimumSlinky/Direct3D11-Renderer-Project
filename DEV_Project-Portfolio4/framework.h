@@ -1,7 +1,3 @@
-// header.h : include file for standard system include files,
-// or project specific include files
-//
-
 #pragma once
 #include "targetver.h"
 
@@ -28,14 +24,3 @@
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "d3dcompiler.lib")
-
-// Used to safely release a COM object and set the COM pointer to nullptr even if it has already been released before
-template<typename T>
-inline void SafeRelease(T& ptr)
-{
-    if (ptr != nullptr)
-    {
-        ptr->Release();
-        ptr = nullptr;
-    }
-}

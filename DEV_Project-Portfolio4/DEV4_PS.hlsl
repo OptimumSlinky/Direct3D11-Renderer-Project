@@ -4,6 +4,8 @@ cbuffer ConstantBuffer : register(b0)
     matrix world;
     matrix view;
     matrix projection;
+    float4 vLightDirection[2];
+    float4 vLightColor[2];
     float4 vOutputColor;
 }
 
@@ -31,7 +33,19 @@ struct PS_Input
 float4 PS_Main(PS_Input input) : SV_Target
 {
     float4 outputColor = 0;
-    outputColor *= diffuseTexture.Sample(linearSampler, input.tex);
+    
+    // 
+    for (int i = 0; i < 2; i++)
+    {
+        outputColor += saturate(dot((float3) vLightDirection[i], input.normal) * vLightColor[i]);
+    }
+    
+    //outputColor *= diffuseTexture.Sample(linearSampler, input.tex);
     outputColor.a = 1;
     return outputColor;
+}
+
+float4 PS_Solid(PS_Input input) : SV_Target
+{
+    return vOutputColor;
 }

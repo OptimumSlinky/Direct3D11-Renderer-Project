@@ -4,6 +4,8 @@ cbuffer ConstantBuffer : register(b0)
     matrix world;
     matrix view;
     matrix projection;
+    float4 vLightDirection[2];
+    float4 vLightColor[2];
     float4 vOutputColor;
 }
 
@@ -35,6 +37,6 @@ VS_Output VS_Main( VS_Input input )
     output.positionH = mul(output.positionH, view);
     output.positionH = mul(output.positionH, projection);
     output.normal = mul(float4(input.normal, 1), world).xyz;
-    output.tex = input.tex;
+    // output.tex = input.tex;
     return output;
 }

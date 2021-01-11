@@ -2,12 +2,38 @@
 // Started: January 2020
 // Trevor Cook
 
-#include "framework.h"
-#include "DEV_Project-Portfolio4.h"
+#include "Resource.h"
 #include "Grid.h"
 
-
 using namespace DirectX;
+using namespace std;
+
+
+// Structures
+struct SimpleVertex
+{
+	XMFLOAT3 position;
+	XMFLOAT3 normal;
+	XMFLOAT2 texture;
+};
+
+struct ConstantBuffer
+{
+	XMMATRIX mWorld;
+	XMMATRIX mView;
+	XMMATRIX mProjection;
+	XMFLOAT4 vLightDirection[2];
+	XMFLOAT4 vLightColor[2];
+	XMFLOAT4 vOutputColor;
+};
+
+struct GridBuffer
+{
+	XMMATRIX mWorld;
+	XMMATRIX mView;
+	XMMATRIX mProjection;
+};
+
 
 // Global variables
 LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
@@ -34,6 +60,7 @@ IDXGISwapChain1* g_pSwapChain1 = nullptr;
 ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
 ID3D11VertexShader* g_pVertexShader = nullptr;
 ID3D11PixelShader* g_pPixelShader = nullptr;
+ID3D11PixelShader* g_pPixelShaderSolid = nullptr;
 ID3D11InputLayout* g_pVertexLayout = nullptr;
 ID3D11VertexShader* g_pGridVertexShader = nullptr;
 ID3D11InputLayout* g_pGridVertexLayout = nullptr;
@@ -43,7 +70,6 @@ ID3D11Texture2D* g_pDepthStencil = nullptr;
 ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
 ID3D11ShaderResourceView* g_pTextureRV = nullptr;
 ID3D11SamplerState* g_pSamplerLinear = nullptr;
-
 
 // Buffers
 ID3D11Buffer* g_pVertexBuffer = nullptr;
@@ -56,39 +82,14 @@ XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 
-
-// Structures
-struct SimpleVertex
-{
-	XMFLOAT3 position;
-	XMFLOAT3 normal;
-	XMFLOAT2 texture;
-};
-
-struct ConstantBuffer
-{
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
-	XMFLOAT4 vOutputColor;
-};
-
-struct GridBuffer
-{
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
-};
-
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-
-// Direct3D forward declarations
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
 void CleanupDevice();
 void Render();
+
 
 // Entry point for the application.
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
@@ -393,7 +394,7 @@ HRESULT InitDevice()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
@@ -646,8 +647,27 @@ void Render()
 		t = (timeCur - timeStart) / 1000.0f;
 	}
 
-	// Animate cube
+	// Rotate cube
 	g_World = XMMatrixRotationY(t);
+
+	// Setup lighting parameters
+	XMFLOAT4 vLightDirections[2] =
+	{
+		XMFLOAT4(-0.577f, 0.577f, -0.577f, 1.0f),
+		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
+	};
+
+	XMFLOAT4 vLightColors[2] =
+	{
+		XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+		XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
+	};
+
+	// Rotate the second light around the origin
+	XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
+	XMVECTOR vLightDir = XMLoadFloat4(&vLightDirections[1]);
+	vLightDir = XMVector3Transform(vLightDir, mRotate);
+	XMStoreFloat4(&vLightDirections[1], vLightDir);
 
 	// Clear the back buffer 
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
@@ -660,6 +680,10 @@ void Render()
 	cb.mWorld = XMMatrixTranspose(g_World);
 	cb.mView = XMMatrixTranspose(g_View);
 	cb.mProjection = XMMatrixTranspose(g_Projection);
+	cb.vLightDirection[0] = vLightDirections[0];
+	cb.vLightDirection[1] = vLightDirections[1];
+	cb.vLightColor[0] = vLightColors[0];
+	cb.vLightColor[1] = vLightColors[1];
 	cb.vOutputColor = XMFLOAT4(0, 0, 0, 0);
 	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	
@@ -672,15 +696,32 @@ void Render()
 	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
 
+
+	// Render each light
+	for (int lights = 0; lights < 2; lights++)
+	{
+		XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&vLightDirections[lights]));
+		XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
+		mLight = mLightScale * mLight;
+
+		// Update the world variable to reflect the current light
+		cb.mWorld = XMMatrixTranspose(mLight);
+		cb.vOutputColor = vLightColors[lights];
+		g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+
+		g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
+		g_pImmediateContext->DrawIndexed(36, 0, 0);
+	}
+
 	// Render gridlines
-	GridBuffer gridBuffer;
+	/*GridBuffer gridBuffer;
 	gridBuffer.mWorld = XMMatrixIdentity();
 	gridBuffer.mView = XMMatrixTranspose(g_View);
 	gridBuffer.mProjection = XMMatrixTranspose(g_Projection);
 	g_pImmediateContext->VSSetShader(g_pGridVertexShader, nullptr, 0);
 	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
+	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);*/
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	g_pSwapChain->Present(0, 0);
