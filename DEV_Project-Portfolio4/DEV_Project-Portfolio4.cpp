@@ -714,14 +714,14 @@ void Render()
 	}
 
 	// Render gridlines
-	/*GridBuffer gridBuffer;
+	GridBuffer gridBuffer;
 	gridBuffer.mWorld = XMMatrixIdentity();
 	gridBuffer.mView = XMMatrixTranspose(g_View);
 	gridBuffer.mProjection = XMMatrixTranspose(g_Projection);
 	g_pImmediateContext->VSSetShader(g_pGridVertexShader, nullptr, 0);
 	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);*/
+	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	g_pSwapChain->Present(0, 0);

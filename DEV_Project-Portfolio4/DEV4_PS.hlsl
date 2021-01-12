@@ -16,7 +16,7 @@ SamplerState linearSampler : register(s0);
 struct VS_Input
 {
     float4 positionL : POSITION;
-    // float4 color : COLOR;
+    float4 color : COLOR;
     float3 normal : NORMAL;
     float2 tex : TEXCOORD0;
 };
@@ -24,7 +24,7 @@ struct VS_Input
 struct PS_Input
 {
     float4 positionL : SV_POSITION;
-   // float4 color : COLOR;
+    float4 color : COLOR;
     float3 normal : NORMAL;
     float2 tex : TEXCOORD1;
 };
