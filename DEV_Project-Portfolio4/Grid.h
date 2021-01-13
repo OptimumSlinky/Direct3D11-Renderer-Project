@@ -7,7 +7,7 @@ using namespace std;
 // Grid vertex structure
 struct GridVertex
 {
-	XMFLOAT3 position;
+	XMFLOAT3 gridPos;
 	XMFLOAT4 color;
 };
 

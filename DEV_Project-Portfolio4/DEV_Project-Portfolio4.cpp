@@ -8,7 +8,6 @@
 using namespace DirectX;
 using namespace std;
 
-
 // Structures
 struct SimpleVertex
 {
@@ -27,13 +26,12 @@ struct ConstantBuffer
 	XMFLOAT4 vOutputColor;
 };
 
-struct GridBuffer
+struct GridConstantBuffer
 {
-	XMMATRIX mWorld;
-	XMMATRIX mView;
-	XMMATRIX mProjection;
+	XMMATRIX gridWorld;
+	XMMATRIX gridView;
+	XMMATRIX gridProjection;
 };
-
 
 // Global variables
 LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
@@ -81,7 +79,7 @@ ID3D11Buffer* g_pGridVertexBuffer = nullptr;
 XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
-XMFLOAT4				g_vOutputColor(0.7f,0.7f,0.7f,1.0f);
+XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -90,7 +88,6 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
 void CleanupDevice();
 void Render();
-
 
 // Entry point for the application.
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
@@ -132,7 +129,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	return (int)msg.wParam;
 }
 
-
 // Register class and create window
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 {
@@ -171,7 +167,6 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 	return S_OK;
 }
-
 
 // Shader compile function
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
@@ -409,9 +404,6 @@ HRESULT InitDevice()
 		return hr;
 	}
 
-	// Set input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-
 	// TODO: compile pixel shaders
 	ID3DBlob* pPSBlob = nullptr;
 	hr = CompileShaderFromFile(L"DEV4_PS.hlsl", "PS_Main", "ps_5_0", &pPSBlob);
@@ -503,19 +495,6 @@ HRESULT InitDevice()
 
 		20,21,22,
 		20,22,23,
-
-		/*0,5,4,
-		1,5,0,*/
-
-		/*3,4,7,
-		0,4,3,
-
-		1,6,5,
-		2,6,1,
-
-		2,7,6,
-		3,7,2,*/
-
 	};
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -526,10 +505,6 @@ HRESULT InitDevice()
 	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
 	if (FAILED(hr))
 		return hr;
-
-
-	// Set primitive topology
-	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
 	// Create constant buffer
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -563,6 +538,21 @@ HRESULT InitDevice()
 	{
 		return hr;
 	}
+
+	//// Create grid components
+	//DrawGrid();
+
+	//bd.Usage = D3D11_USAGE_DEFAULT;
+	//bd.ByteWidth = sizeof(GridConstantBuffer);
+	//bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+	//bd.CPUAccessFlags = 0;
+	//hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pConstantBuffer);
+	//if (FAILED(hr))
+	//{
+	//	return hr;
+	//}
+
+
 
 	// Initialize world matrix
 	g_World = XMMatrixIdentity();
@@ -646,6 +636,12 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 void Render()
 {
+	// Set input layout
+	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
+
+	// Set primitive topology
+	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
 	// Update time
 	static float t = 0.0f;
 	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
@@ -683,6 +679,8 @@ void Render()
 	//vLightDir = XMVector3Transform(vLightDir, mRotate);
 	//XMStoreFloat4(&vLightDirections[1], vLightDir);
 
+
+
 	// Clear the back buffer 
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
 
@@ -700,7 +698,7 @@ void Render()
 	//cb.vLightColor[1] = vLightColors[1];
 	cb.vOutputColor = g_vOutputColor;
 	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-	
+
 
 	// TODO: set vertex buffer
 	UINT stride = sizeof(SimpleVertex);
@@ -737,10 +735,10 @@ void Render()
 	//}
 
 	// Render gridlines
-	GridBuffer gridBuffer;
-	gridBuffer.mWorld = XMMatrixIdentity();
-	gridBuffer.mView = /*XMMatrixTranspose*/(g_View);
-	gridBuffer.mProjection = /*XMMatrixTranspose*/(g_Projection);
+	GridConstantBuffer gridBuffer;
+	gridBuffer.gridWorld = XMMatrixIdentity();
+	gridBuffer.gridView = /*XMMatrixTranspose*/(g_View);
+	gridBuffer.gridProjection = /*XMMatrixTranspose*/(g_Projection);
 	g_pImmediateContext->VSSetShader(g_pGridVertexShader, nullptr, 0);
 	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
