@@ -81,6 +81,7 @@ ID3D11Buffer* g_pGridVertexBuffer = nullptr;
 XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
+XMFLOAT4				g_vOutputColor(0.7f,0.7f,0.7f,1.0f);
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -394,9 +395,9 @@ HRESULT InitDevice()
 	D3D11_INPUT_ELEMENT_DESC layout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	UINT numberElements = ARRAYSIZE(layout);
 
@@ -432,40 +433,46 @@ HRESULT InitDevice()
 	// TODO: create vertex buffer
 	SimpleVertex cubeVertices[] =
 	{
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		// Top
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)  },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)  },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
+		// Bottom
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)  },
+		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)  },
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 
+		// Left Face
 		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)  },
 		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)  },
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)  },
 		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)  },
 
+		// Right Face
 		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
 		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
 		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
 
+		// Front Face
 		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
 		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f)  },
 		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)  },
 		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
 
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)},
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)},
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)},
+		// Back Face
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)},
+		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)},
+		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)},
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
 	};
 
 	D3D11_BUFFER_DESC bd = {};
 	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 8;
+	bd.ByteWidth = sizeof(SimpleVertex) * 24;
 	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bd.CPUAccessFlags = 0;
 
@@ -475,10 +482,6 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// TODO: set vertex buffer
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
 
 	// Create index buffer
 	WORD cubeIndices[] =
@@ -486,20 +489,33 @@ HRESULT InitDevice()
 		3,1,0,
 		2,1,3,
 
-		0,5,4,
-		1,5,0,
+		6,4,5,
+		7,4,6,
 
-		3,4,7,
+		11,9,8,
+		11,10,9,
+
+		12,13,14,
+		15,12,14,
+
+		16,18,17,
+		18,16,19,
+
+		20,21,22,
+		20,22,23,
+
+		/*0,5,4,
+		1,5,0,*/
+
+		/*3,4,7,
 		0,4,3,
 
 		1,6,5,
 		2,6,1,
 
 		2,7,6,
-		3,7,2,
+		3,7,2,*/
 
-		6,4,5,
-		7,4,6,
 	};
 
 	bd.Usage = D3D11_USAGE_DEFAULT;
@@ -511,8 +527,6 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// Set index buffer
-	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
 
 	// Set primitive topology
 	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
@@ -529,7 +543,7 @@ HRESULT InitDevice()
 	}
 
 	// Load cube textures
-	hr = CreateDDSTextureFromFile(g_pd3dDevice, L"crate.dds", nullptr, &g_pTextureRV);
+	hr = CreateDDSTextureFromFile(g_pd3dDevice, L"./crate.dds", nullptr, &g_pTextureRV);
 	if (FAILED(hr))
 	{
 		return hr;
@@ -554,7 +568,7 @@ HRESULT InitDevice()
 	g_World = XMMatrixIdentity();
 
 	// Initialize view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -3.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 2.0f, -3.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(Eye, At, Up);
@@ -563,7 +577,7 @@ HRESULT InitDevice()
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
 
 	return S_OK;
-}
+};
 
 
 //  Processes messages for the main window.
@@ -641,33 +655,33 @@ void Render()
 	else
 	{
 		static ULONGLONG timeStart = 0;
-		ULONGLONG timeCur = GetTickCount64();
+		ULONGLONG timeCurrent = GetTickCount64();
 		if (timeStart == 0)
-			timeStart = timeCur;
-		t = (timeCur - timeStart) / 1000.0f;
+			timeStart = timeCurrent;
+		t = (timeCurrent - timeStart) / 1000.0f;
 	}
 
 	// Rotate cube
 	g_World = XMMatrixRotationY(t);
 
-	// Setup lighting parameters
+	//// Setup lighting parameters
 	XMFLOAT4 vLightDirections[2] =
 	{
-		XMFLOAT4(-0.577f, 0.577f, -0.577f, 1.0f),
+		XMFLOAT4(1.0f, -1.0f, 0.0f, 1.0f),
 		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
 	};
 
 	XMFLOAT4 vLightColors[2] =
 	{
-		XMFLOAT4(0.5f, 0.5f, 0.5f, 1.0f),
+		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
 		XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
 	};
 
-	// Rotate the second light around the origin
-	XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
-	XMVECTOR vLightDir = XMLoadFloat4(&vLightDirections[1]);
-	vLightDir = XMVector3Transform(vLightDir, mRotate);
-	XMStoreFloat4(&vLightDirections[1], vLightDir);
+	//// Rotate the second light around the origin
+	//XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
+	//XMVECTOR vLightDir = XMLoadFloat4(&vLightDirections[1]);
+	//vLightDir = XMVector3Transform(vLightDir, mRotate);
+	//XMStoreFloat4(&vLightDirections[1], vLightDir);
 
 	// Clear the back buffer 
 	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
@@ -677,16 +691,25 @@ void Render()
 
 	// Update 
 	ConstantBuffer cb;
-	cb.mWorld = XMMatrixTranspose(g_World);
-	cb.mView = XMMatrixTranspose(g_View);
-	cb.mProjection = XMMatrixTranspose(g_Projection);
+	cb.mWorld = /*XMMatrixTranspose*/(g_World);
+	cb.mView = /*XMMatrixTranspose*/(g_View);
+	cb.mProjection = /*XMMatrixTranspose*/(g_Projection);
 	cb.vLightDirection[0] = vLightDirections[0];
-	cb.vLightDirection[1] = vLightDirections[1];
+	//cb.vLightDirection[1] = vLightDirections[1];
 	cb.vLightColor[0] = vLightColors[0];
-	cb.vLightColor[1] = vLightColors[1];
-	cb.vOutputColor = XMFLOAT4(0, 0, 0, 0);
+	//cb.vLightColor[1] = vLightColors[1];
+	cb.vOutputColor = g_vOutputColor;
 	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 	
+
+	// TODO: set vertex buffer
+	UINT stride = sizeof(SimpleVertex);
+	UINT offset = 0;
+	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
+
+	// Set index buffer
+	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
+
 	// Render cube
 	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
 	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
@@ -697,27 +720,27 @@ void Render()
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
 
 
-	// Render each light
-	for (int lights = 0; lights < 2; lights++)
-	{
-		XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&vLightDirections[lights]));
-		XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
-		mLight = mLightScale * mLight;
+	//// Render each light
+	//for (int lights = 0; lights < 2; lights++)
+	//{
+	//	XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&vLightDirections[lights]));
+	//	XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
+	//	mLight = mLightScale * mLight;
 
-		// Update the world variable to reflect the current light
-		cb.mWorld = XMMatrixTranspose(mLight);
-		cb.vOutputColor = vLightColors[lights];
-		g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
+	//	// Update the world variable to reflect the current light
+	//	cb.mWorld = XMMatrixTranspose(mLight);
+	//	cb.vOutputColor = vLightColors[lights];
+	//	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
 
-		g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
-		g_pImmediateContext->DrawIndexed(36, 0, 0);
-	}
+	//	g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
+	//	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	//}
 
 	// Render gridlines
 	GridBuffer gridBuffer;
 	gridBuffer.mWorld = XMMatrixIdentity();
-	gridBuffer.mView = XMMatrixTranspose(g_View);
-	gridBuffer.mProjection = XMMatrixTranspose(g_Projection);
+	gridBuffer.mView = /*XMMatrixTranspose*/(g_View);
+	gridBuffer.mProjection = /*XMMatrixTranspose*/(g_Projection);
 	g_pImmediateContext->VSSetShader(g_pGridVertexShader, nullptr, 0);
 	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
 	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
