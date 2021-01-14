@@ -12,6 +12,15 @@
     <ContentFile>
       <FullPath>Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV4_VS.cso</FullPath>
     </ContentFile>
+    <ContentFile>
+      <FullPath>Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\GRID_PS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\GRID_VS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\SOLID_PS.cso</FullPath>
+    </ContentFile>
   </ContentFiles>
   <SatelliteDlls />
   <NonRecipeFileRefs />

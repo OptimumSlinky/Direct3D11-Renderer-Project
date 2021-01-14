@@ -36,6 +36,12 @@
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
     </ClInclude>
+    <ClInclude Include="RenderTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshTools.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEV_Project-Portfolio4.cpp">
@@ -63,6 +69,15 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="DEV4_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SOLID_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="GRID_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="GRID_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>

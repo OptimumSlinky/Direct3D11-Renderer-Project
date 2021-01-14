@@ -3,18 +3,12 @@
 // Trevor Cook
 
 #include "Resource.h"
+#include "RenderTools.h"
+#include "MeshTools.h"
 #include "Grid.h"
 
 using namespace DirectX;
 using namespace std;
-
-// Structures
-struct SimpleVertex
-{
-	XMFLOAT3 position;
-	XMFLOAT3 normal;
-	XMFLOAT2 texture;
-};
 
 struct ConstantBuffer
 {
@@ -53,27 +47,11 @@ ID3D11DeviceContext* g_pImmediateContext = nullptr;
 ID3D11DeviceContext1* g_pImmediateContext1 = nullptr;
 IDXGISwapChain* g_pSwapChain = nullptr;
 IDXGISwapChain1* g_pSwapChain1 = nullptr;
-
-// Essentials for back buffer and viewing
 ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
-ID3D11VertexShader* g_pVertexShader = nullptr;
-ID3D11PixelShader* g_pPixelShader = nullptr;
-ID3D11PixelShader* g_pPixelShaderSolid = nullptr;
-ID3D11InputLayout* g_pVertexLayout = nullptr;
-ID3D11VertexShader* g_pGridVertexShader = nullptr;
-ID3D11InputLayout* g_pGridVertexLayout = nullptr;
-
-// Essentials for texturing
 ID3D11Texture2D* g_pDepthStencil = nullptr;
 ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
 ID3D11ShaderResourceView* g_pTextureRV = nullptr;
 ID3D11SamplerState* g_pSamplerLinear = nullptr;
-
-// Buffers
-ID3D11Buffer* g_pVertexBuffer = nullptr;
-ID3D11Buffer* g_pIndexBuffer = nullptr;
-ID3D11Buffer* g_pConstantBuffer = nullptr;
-ID3D11Buffer* g_pGridVertexBuffer = nullptr;
 
 // Matrices 
 XMMATRIX                g_World;
@@ -81,11 +59,22 @@ XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
 
+// 3D Cube
+ShaderMaterials cubeShaderMaterials;
+ShaderController cubeShaderController;
+BufferController<SimpleVertex> cubeBufferController;
+
+// Grid
+ShaderMaterials gridShaderMaterials;
+ShaderController gridShaderController;
+BufferController<GridVertex> gridBufferController;
+
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow);
 HRESULT InitDevice();
+HRESULT Init3DContent();
 void CleanupDevice();
 void Render();
 
@@ -120,6 +109,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else
 		{
+			Init3DContent();
 			Render();
 		}
 	}
@@ -164,29 +154,6 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
-
-	return S_OK;
-}
-
-// Shader compile function
-HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
-{
-	HRESULT hr = S_OK;
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-
-	ID3DBlob* pErrorBlob = nullptr;
-	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
-		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
-	if (FAILED(hr))
-	{
-		if (pErrorBlob)
-		{
-			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
-			pErrorBlob->Release();
-		}
-		return hr;
-	}
-	if (pErrorBlob) pErrorBlob->Release();
 
 	return S_OK;
 }
@@ -368,192 +335,6 @@ HRESULT InitDevice()
 	vp.TopLeftY = 0;
 	g_pImmediateContext->RSSetViewports(1, &vp);
 
-	// TODO: compile vertex shaders
-	ID3DBlob* pVSBlob = nullptr;
-	hr = CompileShaderFromFile(L"DEV4_VS.hlsl", "VS_Main", "vs_5_0", &pVSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(nullptr, L"Shader file cannot be found. Verify file path and location.", L"Error", MB_OK);
-
-		return hr;
-	}
-
-	// TODO: create vertex shaders
-	hr = g_pd3dDevice->CreateVertexShader(pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), nullptr, &g_pVertexShader);
-	if (FAILED(hr))
-	{
-		pVSBlob->Release();
-		return hr;
-	}
-
-	// TODO: define input layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
-	{
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-	UINT numberElements = ARRAYSIZE(layout);
-
-	// TODO: create input layout
-	hr = g_pd3dDevice->CreateInputLayout(layout, numberElements, pVSBlob->GetBufferPointer(), pVSBlob->GetBufferSize(), &g_pVertexLayout);
-	pVSBlob->Release();
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// TODO: compile pixel shaders
-	ID3DBlob* pPSBlob = nullptr;
-	hr = CompileShaderFromFile(L"DEV4_PS.hlsl", "PS_Main", "ps_5_0", &pPSBlob);
-	if (FAILED(hr))
-	{
-		MessageBox(nullptr, L"Shader file cannot be found. Verify file path and location.", L"Error", MB_OK);
-
-		return hr;
-	}
-
-	// TODO: create pixel shaders
-	hr = g_pd3dDevice->CreatePixelShader(pPSBlob->GetBufferPointer(), pPSBlob->GetBufferSize(), nullptr, &g_pPixelShader);
-	pPSBlob->Release();
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// TODO: create vertex buffer
-	SimpleVertex cubeVertices[] =
-	{
-		// Top
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-
-		// Bottom
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)  },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)  },
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, -1.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-
-		// Left Face
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f)  },
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f)  },
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f)  },
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(-1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f)  },
-
-		// Right Face
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(0.0f, 0.0f) },
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(1.0f, 0.0f, 0.0f), XMFLOAT2(1.0f, 0.0f) },
-
-		// Front Face
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 1.0f) },
-		{ XMFLOAT3(1.0f, -1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 1.0f)  },
-		{ XMFLOAT3(1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(1.0f, 0.0f)  },
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f), XMFLOAT3(0.0f, 0.0f, -1.0f), XMFLOAT2(0.0f, 0.0f) },
-
-		// Back Face
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 1.0f)},
-		{ XMFLOAT3(1.0f, -1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 1.0f)},
-		{ XMFLOAT3(1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(1.0f, 0.0f)},
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT3(0.0f, 0.0f, 1.0f), XMFLOAT2(0.0f, 0.0f)},
-	};
-
-	D3D11_BUFFER_DESC bd = {};
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(SimpleVertex) * 24;
-	bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-
-	D3D11_SUBRESOURCE_DATA InitData = {};
-	InitData.pSysMem = cubeVertices;
-	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pVertexBuffer);
-	if (FAILED(hr))
-		return hr;
-
-
-	// Create index buffer
-	WORD cubeIndices[] =
-	{
-		3,1,0,
-		2,1,3,
-
-		6,4,5,
-		7,4,6,
-
-		11,9,8,
-		11,10,9,
-
-		12,13,14,
-		15,12,14,
-
-		16,18,17,
-		18,16,19,
-
-		20,21,22,
-		20,22,23,
-	};
-
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(cubeIndices);        // 36 vertices needed for 12 triangles in a triangle list
-	bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bd.CPUAccessFlags = 0;
-	InitData.pSysMem = cubeIndices;
-	hr = g_pd3dDevice->CreateBuffer(&bd, &InitData, &g_pIndexBuffer);
-	if (FAILED(hr))
-		return hr;
-
-	// Create constant buffer
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.ByteWidth = sizeof(ConstantBuffer);
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	bd.CPUAccessFlags = 0;
-	hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pConstantBuffer);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// Load cube textures
-	hr = CreateDDSTextureFromFile(g_pd3dDevice, L"./crate.dds", nullptr, &g_pTextureRV);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	// Create sample state
-	D3D11_SAMPLER_DESC sampDesc = {};
-	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
-	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
-	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
-	sampDesc.MinLOD = 0;
-	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
-	hr = g_pd3dDevice->CreateSamplerState(&sampDesc, &g_pSamplerLinear);
-	if (FAILED(hr))
-	{
-		return hr;
-	}
-
-	//// Create grid components
-	//DrawGrid();
-
-	//bd.Usage = D3D11_USAGE_DEFAULT;
-	//bd.ByteWidth = sizeof(GridConstantBuffer);
-	//bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	//bd.CPUAccessFlags = 0;
-	//hr = g_pd3dDevice->CreateBuffer(&bd, nullptr, &g_pConstantBuffer);
-	//if (FAILED(hr))
-	//{
-	//	return hr;
-	//}
-
-
-
 	// Initialize world matrix
 	g_World = XMMatrixIdentity();
 
@@ -569,6 +350,152 @@ HRESULT InitDevice()
 	return S_OK;
 };
 
+HRESULT Init3DContent()
+{
+	HRESULT hr = S_OK;
+
+	// TODO: define input layout
+	D3D11_INPUT_ELEMENT_DESC layout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+
+	// Create vertex shader and input layout from file
+	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice, "DEV4_VS.cso", layout, ARRAYSIZE(layout));
+
+	// Create pixel shader from file
+	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice, "DEV4_PS.cso");
+
+	// Create 3D cube
+	SimpleMesh<SimpleVertex> newCube = CreateCube();
+
+	// Create vertex buffers
+	cubeBufferController.CreateBuffers(g_pd3dDevice, newCube.indicesList, newCube.vertexList);
+
+	// Create constant buffer
+	cubeShaderController.CreateVSConstantBuffer(g_pd3dDevice, sizeof(ConstantBuffer));
+	cubeShaderController.PS_ConstantBuffer = cubeShaderController.VS_ConstantBuffer;
+
+	// Load texture 
+	cubeShaderMaterials.CreateTextureFromFile(g_pd3dDevice, "./crate.dds");
+
+	// Create sampler state
+	cubeShaderMaterials.CreateDefaultSampler(g_pd3dDevice);
+
+	// Create grid
+	DrawGrid();
+
+	// Create grid constant and vertex buffers
+	gridShaderController.CreateVSConstantBuffer(g_pd3dDevice, sizeof(GridConstantBuffer));
+	gridBufferController.CreateVertexBuffer(g_pd3dDevice, gridlines);
+	gridBufferController.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+
+	// Create grid layout
+	D3D11_INPUT_ELEMENT_DESC gridLayout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice, "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
+	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice, "GRID_PS.cso");
+
+	return S_OK;
+}
+
+
+
+void Render()
+{
+	// Update time
+	static float t = 0.0f;
+	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	{
+		t += (float)XM_PI * 0.0125f;
+	}
+	else
+	{
+		static ULONGLONG timeStart = 0;
+		ULONGLONG timeCurrent = GetTickCount64();
+		if (timeStart == 0)
+			timeStart = timeCurrent;
+		t = (timeCurrent - timeStart) / 1000.0f;
+	}
+
+	// Rotate cube
+	g_World = XMMatrixRotationY(t);
+
+	//// Setup lighting parameters
+	XMFLOAT4 vLightDirections[2] =
+	{
+		XMFLOAT4(1.0f, -1.0f, 0.0f, 1.0f),
+		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
+	};
+
+	XMFLOAT4 vLightColors[2] =
+	{
+		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
+		XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
+	};
+
+	// Clear the back buffer 
+	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+
+	// Clear the depth buffer to max depth (1.0f)
+	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// Update 
+	ConstantBuffer cb;
+	cb.mWorld = (g_World);
+	cb.mView = (g_View);
+	cb.mProjection = (g_Projection);
+	cb.vLightDirection[0] = vLightDirections[0];
+	cb.vLightColor[0] = vLightColors[0];
+	cb.vOutputColor = g_vOutputColor;
+	
+	// Render cube
+	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	cubeShaderMaterials.Bind(g_pImmediateContext);
+	cubeShaderController.Bind(g_pImmediateContext);
+	g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
+	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+	cubeBufferController.BindAndDraw(g_pImmediateContext);
+	
+	// Render gridlines
+	GridConstantBuffer gridBuffer;
+	gridBuffer.gridWorld = XMMatrixIdentity();
+	gridBuffer.gridView = (g_View);
+	gridBuffer.gridProjection = (g_Projection);
+	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridBuffer, 0, 0);
+	gridShaderController.Bind(g_pImmediateContext);
+	gridBufferController.BindAndDraw(g_pImmediateContext);
+
+	// Present back buffer information to the front buffer (user viewpoint)
+	g_pSwapChain->Present(0, 0);
+}
+
+void CleanupDevice()
+{
+	if (g_pImmediateContext) g_pImmediateContext->ClearState();
+	/*if (g_pVertexBuffer) g_pVertexBuffer->Release();
+	if (g_pVertexLayout) g_pVertexLayout->Release();
+	if (g_pVertexShader) g_pVertexShader->Release();
+	if (g_pPixelShader) g_pPixelShader->Release();*/
+	if (g_pDepthStencil) g_pDepthStencil->Release();
+	if (g_pDepthStencilView) g_pDepthStencilView->Release();
+	if (g_pTextureRV) g_pTextureRV->Release();
+	if (g_pSamplerLinear) g_pSamplerLinear->Release();
+	if (g_pRenderTargetView) g_pRenderTargetView->Release();
+	if (g_pSwapChain1) g_pSwapChain1->Release();
+	if (g_pSwapChain) g_pSwapChain->Release();
+	if (g_pImmediateContext1) g_pImmediateContext1->Release();
+	if (g_pImmediateContext) g_pImmediateContext->Release();
+	if (g_pd3dDevice1) g_pd3dDevice1->Release();
+	if (g_pd3dDevice) g_pd3dDevice->Release();
+}
 
 //  Processes messages for the main window.
 //  WM_COMMAND  - process the application menu
@@ -631,142 +558,4 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 		break;
 	}
 	return (INT_PTR)FALSE;
-}
-
-
-void Render()
-{
-	// Set input layout
-	g_pImmediateContext->IASetInputLayout(g_pVertexLayout);
-
-	// Set primitive topology
-	g_pImmediateContext->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-	// Update time
-	static float t = 0.0f;
-	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
-	{
-		t += (float)XM_PI * 0.0125f;
-	}
-	else
-	{
-		static ULONGLONG timeStart = 0;
-		ULONGLONG timeCurrent = GetTickCount64();
-		if (timeStart == 0)
-			timeStart = timeCurrent;
-		t = (timeCurrent - timeStart) / 1000.0f;
-	}
-
-	// Rotate cube
-	g_World = XMMatrixRotationY(t);
-
-	//// Setup lighting parameters
-	XMFLOAT4 vLightDirections[2] =
-	{
-		XMFLOAT4(1.0f, -1.0f, 0.0f, 1.0f),
-		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
-	};
-
-	XMFLOAT4 vLightColors[2] =
-	{
-		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
-		XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
-	};
-
-	//// Rotate the second light around the origin
-	//XMMATRIX mRotate = XMMatrixRotationY(-2.0f * t);
-	//XMVECTOR vLightDir = XMLoadFloat4(&vLightDirections[1]);
-	//vLightDir = XMVector3Transform(vLightDir, mRotate);
-	//XMStoreFloat4(&vLightDirections[1], vLightDir);
-
-
-
-	// Clear the back buffer 
-	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
-
-	// Clear the depth buffer to max depth (1.0f)
-	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
-
-	// Update 
-	ConstantBuffer cb;
-	cb.mWorld = /*XMMatrixTranspose*/(g_World);
-	cb.mView = /*XMMatrixTranspose*/(g_View);
-	cb.mProjection = /*XMMatrixTranspose*/(g_Projection);
-	cb.vLightDirection[0] = vLightDirections[0];
-	//cb.vLightDirection[1] = vLightDirections[1];
-	cb.vLightColor[0] = vLightColors[0];
-	//cb.vLightColor[1] = vLightColors[1];
-	cb.vOutputColor = g_vOutputColor;
-	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-
-
-	// TODO: set vertex buffer
-	UINT stride = sizeof(SimpleVertex);
-	UINT offset = 0;
-	g_pImmediateContext->IASetVertexBuffers(0, 1, &g_pVertexBuffer, &stride, &offset);
-
-	// Set index buffer
-	g_pImmediateContext->IASetIndexBuffer(g_pIndexBuffer, DXGI_FORMAT_R16_UINT, 0);
-
-	// Render cube
-	g_pImmediateContext->VSSetShader(g_pVertexShader, nullptr, 0);
-	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pConstantBuffer);
-	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pConstantBuffer);
-	g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
-
-
-	//// Render each light
-	//for (int lights = 0; lights < 2; lights++)
-	//{
-	//	XMMATRIX mLight = XMMatrixTranslationFromVector(5.0f * XMLoadFloat4(&vLightDirections[lights]));
-	//	XMMATRIX mLightScale = XMMatrixScaling(0.2f, 0.2f, 0.2f);
-	//	mLight = mLightScale * mLight;
-
-	//	// Update the world variable to reflect the current light
-	//	cb.mWorld = XMMatrixTranspose(mLight);
-	//	cb.vOutputColor = vLightColors[lights];
-	//	g_pImmediateContext->UpdateSubresource(g_pConstantBuffer, 0, nullptr, &cb, 0, 0);
-
-	//	g_pImmediateContext->PSSetShader(g_pPixelShaderSolid, nullptr, 0);
-	//	g_pImmediateContext->DrawIndexed(36, 0, 0);
-	//}
-
-	// Render gridlines
-	GridConstantBuffer gridBuffer;
-	gridBuffer.gridWorld = XMMatrixIdentity();
-	gridBuffer.gridView = /*XMMatrixTranspose*/(g_View);
-	gridBuffer.gridProjection = /*XMMatrixTranspose*/(g_Projection);
-	g_pImmediateContext->VSSetShader(g_pGridVertexShader, nullptr, 0);
-	g_pImmediateContext->VSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
-	g_pImmediateContext->PSSetShader(g_pPixelShader, nullptr, 0);
-	g_pImmediateContext->PSSetConstantBuffers(0, 1, &g_pGridVertexBuffer);
-
-	// Present back buffer information to the front buffer (user viewpoint)
-	g_pSwapChain->Present(0, 0);
-}
-
-
-void CleanupDevice()
-{
-	if (g_pImmediateContext) g_pImmediateContext->ClearState();
-
-	if (g_pVertexBuffer) g_pVertexBuffer->Release();
-	if (g_pVertexLayout) g_pVertexLayout->Release();
-	if (g_pVertexShader) g_pVertexShader->Release();
-	if (g_pPixelShader) g_pPixelShader->Release();
-
-	if (g_pTextureRV) g_pTextureRV->Release();
-	if (g_pSamplerLinear) g_pSamplerLinear->Release();
-
-	if (g_pRenderTargetView) g_pRenderTargetView->Release();
-	if (g_pSwapChain1) g_pSwapChain1->Release();
-	if (g_pSwapChain) g_pSwapChain->Release();
-	if (g_pImmediateContext1) g_pImmediateContext1->Release();
-	if (g_pImmediateContext) g_pImmediateContext->Release();
-
-	if (g_pd3dDevice1) g_pd3dDevice1->Release();
-	if (g_pd3dDevice) g_pd3dDevice->Release();
 }
