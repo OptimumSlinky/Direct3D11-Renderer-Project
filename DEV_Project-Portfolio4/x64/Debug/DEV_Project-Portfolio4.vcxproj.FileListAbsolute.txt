@@ -1,7 +1,2 @@
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV4_PS.cso
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV4_VS.cso
 Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
 Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.pdb
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\GRID_PS.cso
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\GRID_VS.cso
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\SOLID_PS.cso

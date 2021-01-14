@@ -1,3 +1,5 @@
+#pragma pack_matrix(row_major)
+
 cbuffer ConstantBuffer : register(b0)
 {
     matrix World;
@@ -7,7 +9,7 @@ cbuffer ConstantBuffer : register(b0)
 
 struct VS_INPUT
 {
-    float4 Pos : POSITION;
+    float3 Pos : POSITION;
     float4 Color : COLOR;
 };
 
@@ -21,7 +23,7 @@ struct PS_INPUT
 PS_INPUT main( VS_INPUT input ) 
 {
     PS_INPUT output = (PS_INPUT) 0;
-    output.Pos = mul(input.Pos, World);
+    output.Pos = mul(float4(input.Pos, 1), World);
     output.Pos = mul(output.Pos, View);
     output.Pos = mul(output.Pos, Projection);
     output.Color = input.Color;

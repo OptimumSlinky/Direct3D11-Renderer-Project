@@ -93,7 +93,7 @@ struct ShaderMaterials
 		// Sets texture
 		if (ResourceView.Get())
 		{
-			currentContext->PSGetShaderResources(0, 1, ResourceView.GetAddressOf());
+			currentContext->PSSetShaderResources(0, 1, ResourceView.GetAddressOf());
 		}
 
 		// Sets sampler
@@ -219,7 +219,7 @@ template <typename T> struct BufferController
 		D3D11_SUBRESOURCE_DATA InitData = {};
 		InitData.pSysMem = indices.data();
 		hr = gpu_device->CreateBuffer(&bd, &InitData,
-			IndexBuffer.ReleaseAndGetAddressOf());
+			IndexBuffer.GetAddressOf());
 		return hr;
 	}
 

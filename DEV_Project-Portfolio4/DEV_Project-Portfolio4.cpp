@@ -9,6 +9,7 @@
 
 using namespace DirectX;
 using namespace std;
+using Microsoft::WRL::ComPtr;
 
 struct ConstantBuffer
 {
@@ -41,17 +42,17 @@ D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 // Direct3D device and swap chain
-ID3D11Device* g_pd3dDevice = nullptr;
-ID3D11Device1* g_pd3dDevice1 = nullptr;
-ID3D11DeviceContext* g_pImmediateContext = nullptr;
-ID3D11DeviceContext1* g_pImmediateContext1 = nullptr;
-IDXGISwapChain* g_pSwapChain = nullptr;
-IDXGISwapChain1* g_pSwapChain1 = nullptr;
-ID3D11RenderTargetView* g_pRenderTargetView = nullptr;
-ID3D11Texture2D* g_pDepthStencil = nullptr;
-ID3D11DepthStencilView* g_pDepthStencilView = nullptr;
-ID3D11ShaderResourceView* g_pTextureRV = nullptr;
-ID3D11SamplerState* g_pSamplerLinear = nullptr;
+ComPtr<ID3D11Device> g_pd3dDevice = nullptr;
+ComPtr<ID3D11Device1> g_pd3dDevice1 = nullptr;
+ComPtr<ID3D11DeviceContext> g_pImmediateContext = nullptr;
+ComPtr<ID3D11DeviceContext1> g_pImmediateContext1 = nullptr;
+ComPtr<IDXGISwapChain> g_pSwapChain = nullptr;
+ComPtr<IDXGISwapChain1> g_pSwapChain1 = nullptr;
+ComPtr<ID3D11RenderTargetView> g_pRenderTargetView = nullptr;
+ComPtr<ID3D11Texture2D> g_pDepthStencil = nullptr;
+ComPtr<ID3D11DepthStencilView> g_pDepthStencilView = nullptr;
+ComPtr<ID3D11ShaderResourceView> g_pTextureRV = nullptr;
+ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
 
 // Matrices 
 XMMATRIX                g_World;
@@ -194,13 +195,13 @@ HRESULT InitDevice()
 	{
 		g_driverType = driverTypes[driverTypeIndex];
 		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
+			D3D11_SDK_VERSION, g_pd3dDevice.GetAddressOf(), &g_featureLevel, g_pImmediateContext.GetAddressOf());
 
 		if (hr == E_INVALIDARG)
 		{
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
-				D3D11_SDK_VERSION, &g_pd3dDevice, &g_featureLevel, &g_pImmediateContext);
+				D3D11_SDK_VERSION, g_pd3dDevice.GetAddressOf(), &g_featureLevel, g_pImmediateContext.GetAddressOf());
 		}
 
 		if (SUCCEEDED(hr))
@@ -235,10 +236,10 @@ HRESULT InitDevice()
 	if (dxgiFactory2)
 	{
 		// DirectX 11.1 or later
-		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(&g_pd3dDevice1));
+		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(g_pd3dDevice1.GetAddressOf()));
 		if (SUCCEEDED(hr))
 		{
-			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(&g_pImmediateContext1));
+			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(g_pImmediateContext1.GetAddressOf()));
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
@@ -250,10 +251,10 @@ HRESULT InitDevice()
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
-		hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice, g_hWnd, &sd, nullptr, nullptr, &g_pSwapChain1);
+		hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice.Get(), g_hWnd, &sd, nullptr, nullptr, g_pSwapChain1.GetAddressOf());
 		if (SUCCEEDED(hr))
 		{
-			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(&g_pSwapChain));
+			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(g_pSwapChain.GetAddressOf()));
 		}
 
 		dxgiFactory2->Release();
@@ -274,7 +275,7 @@ HRESULT InitDevice()
 		sd.SampleDesc.Quality = 0;
 		sd.Windowed = TRUE;
 
-		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice, &sd, &g_pSwapChain);
+		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice.Get(), &sd, g_pSwapChain.GetAddressOf());
 	}
 
 	dxgiFactory->Release();
@@ -288,7 +289,7 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, &g_pRenderTargetView);
+	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, g_pRenderTargetView.GetAddressOf());
 	pBackBuffer->Release();
 	if (FAILED(hr))
 		return hr;
@@ -306,7 +307,7 @@ HRESULT InitDevice()
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = g_pd3dDevice->CreateTexture2D(&descDepth, nullptr, &g_pDepthStencil);
+	hr = g_pd3dDevice->CreateTexture2D(&descDepth, nullptr, g_pDepthStencil.GetAddressOf());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -317,13 +318,13 @@ HRESULT InitDevice()
 	descDSView.Format = descDepth.Format;
 	descDSView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSView.Texture2D.MipSlice = 0;
-	hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil, &descDSView, &g_pDepthStencilView);
+	hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil.Get(), &descDSView, g_pDepthStencilView.GetAddressOf());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	g_pImmediateContext->OMSetRenderTargets(1, &g_pRenderTargetView, g_pDepthStencilView);
+	g_pImmediateContext->OMSetRenderTargets(1, g_pRenderTargetView.GetAddressOf(), g_pDepthStencilView.Get());
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -339,7 +340,7 @@ HRESULT InitDevice()
 	g_World = XMMatrixIdentity();
 
 	// Initialize view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 2.0f, -3.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -3.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(Eye, At, Up);
@@ -364,33 +365,33 @@ HRESULT Init3DContent()
 	};
 
 	// Create vertex shader and input layout from file
-	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice, "DEV4_VS.cso", layout, ARRAYSIZE(layout));
+	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "DEV4_VS.cso", layout, ARRAYSIZE(layout));
 
 	// Create pixel shader from file
-	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice, "DEV4_PS.cso");
+	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "DEV4_PS.cso");
 
 	// Create 3D cube
 	SimpleMesh<SimpleVertex> newCube = CreateCube();
 
 	// Create vertex buffers
-	cubeBufferController.CreateBuffers(g_pd3dDevice, newCube.indicesList, newCube.vertexList);
+	cubeBufferController.CreateBuffers(g_pd3dDevice.Get(), newCube.indicesList, newCube.vertexList);
 
 	// Create constant buffer
-	cubeShaderController.CreateVSConstantBuffer(g_pd3dDevice, sizeof(ConstantBuffer));
+	cubeShaderController.CreateVSConstantBuffer(g_pd3dDevice.Get(), sizeof(ConstantBuffer));
 	cubeShaderController.PS_ConstantBuffer = cubeShaderController.VS_ConstantBuffer;
 
 	// Load texture 
-	cubeShaderMaterials.CreateTextureFromFile(g_pd3dDevice, "./crate.dds");
+	cubeShaderMaterials.CreateTextureFromFile(g_pd3dDevice.Get(), "./crate.dds");
 
 	// Create sampler state
-	cubeShaderMaterials.CreateDefaultSampler(g_pd3dDevice);
+	cubeShaderMaterials.CreateDefaultSampler(g_pd3dDevice.Get());
 
 	// Create grid
 	DrawGrid();
 
 	// Create grid constant and vertex buffers
-	gridShaderController.CreateVSConstantBuffer(g_pd3dDevice, sizeof(GridConstantBuffer));
-	gridBufferController.CreateVertexBuffer(g_pd3dDevice, gridlines);
+	gridShaderController.CreateVSConstantBuffer(g_pd3dDevice.Get(), sizeof(GridConstantBuffer));
+	gridBufferController.CreateVertexBuffer(g_pd3dDevice.Get(), gridlines);
 	gridBufferController.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 
 	// Create grid layout
@@ -400,8 +401,8 @@ HRESULT Init3DContent()
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice, "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
-	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice, "GRID_PS.cso");
+	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
+	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "GRID_PS.cso");
 
 	return S_OK;
 }
@@ -442,10 +443,10 @@ void Render()
 	};
 
 	// Clear the back buffer 
-	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView, Colors::MidnightBlue);
+	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView.Get(), Colors::MidnightBlue);
 
 	// Clear the depth buffer to max depth (1.0f)
-	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView, D3D11_CLEAR_DEPTH, 1.0f, 0);
+	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Update 
 	ConstantBuffer cb;
@@ -458,20 +459,20 @@ void Render()
 	
 	// Render cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	cubeShaderMaterials.Bind(g_pImmediateContext);
-	cubeShaderController.Bind(g_pImmediateContext);
-	g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-	g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
-	cubeBufferController.BindAndDraw(g_pImmediateContext);
+	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
+	cubeShaderController.Bind(g_pImmediateContext.Get());
+	//g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
+	//g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
+	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
 	
 	// Render gridlines
-	GridConstantBuffer gridBuffer;
-	gridBuffer.gridWorld = XMMatrixIdentity();
-	gridBuffer.gridView = (g_View);
-	gridBuffer.gridProjection = (g_Projection);
-	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridBuffer, 0, 0);
-	gridShaderController.Bind(g_pImmediateContext);
-	gridBufferController.BindAndDraw(g_pImmediateContext);
+	//ConstantBuffer cb;
+	cb.mWorld = XMMatrixIdentity();
+	cb.mView = (g_View);
+	cb.mProjection = (g_Projection);
+	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	gridShaderController.Bind(g_pImmediateContext.Get());
+	gridBufferController.BindAndDraw(g_pImmediateContext.Get());
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	g_pSwapChain->Present(0, 0);
