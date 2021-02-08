@@ -466,11 +466,11 @@ void Render()
 	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
 	
 	// Render gridlines
-	//ConstantBuffer cb;
-	cb.mWorld = XMMatrixIdentity();
-	cb.mView = (g_View);
-	cb.mProjection = (g_Projection);
-	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	GridConstantBuffer gridCB;
+	gridCB.gridWorld = XMMatrixIdentity();
+	gridCB.gridView = (g_View);
+	gridCB.gridProjection = (g_Projection);
+	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridCB, 0, 0);
 	gridShaderController.Bind(g_pImmediateContext.Get());
 	gridBufferController.BindAndDraw(g_pImmediateContext.Get());
 

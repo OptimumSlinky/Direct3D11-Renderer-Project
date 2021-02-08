@@ -65,12 +65,6 @@
     </Image>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="DEV4_VS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
-    <FxCompile Include="DEV4_PS.hlsl">
-      <Filter>Shaders</Filter>
-    </FxCompile>
     <FxCompile Include="SOLID_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
@@ -78,6 +72,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="GRID_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="MAIN_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="MAIN_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
