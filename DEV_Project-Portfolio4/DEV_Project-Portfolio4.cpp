@@ -11,6 +11,13 @@ using namespace DirectX;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
+struct LightObj
+{
+	XMFLOAT4 position;
+	XMFLOAT4 color;
+	XMFLOAT4 direction;
+};
+
 struct ConstantBuffer
 {
 	XMMATRIX mWorld;
@@ -28,6 +35,7 @@ struct GridConstantBuffer
 	XMMATRIX gridView;
 	XMMATRIX gridProjection;
 };
+
 
 // Global variables
 LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
