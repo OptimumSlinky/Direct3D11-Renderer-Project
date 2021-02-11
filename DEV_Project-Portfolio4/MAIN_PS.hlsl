@@ -1,12 +1,25 @@
 // Constant buffer
+
+struct LightObj
+{
+    // Position
+    float4 litePosition;
+    
+    // Color
+    float4 liteColor;
+    
+    // Direction
+    float4 liteDirection;
+};
+
 cbuffer ConstantBuffer : register(b0)
 {
     matrix world;
     matrix view;
     matrix projection;
-    float4 vLightPosition[2];
-    float4 vLightDirection[2];
-    float4 vLightColor[2];
+    float4 vLightPosition[3];
+    float4 vLightDirection[3];
+    float4 vLightColor[3];
     float4 vOutputColor;
 }
 
@@ -19,7 +32,11 @@ struct PS_Input
     // float3 color : COLOR;
     float3 normal : NORMAL;
     float2 tex : TEXCOORD0;
+    float3 positionW : WORLDPOSITION;
+
 };
+
+// TODO: Create Light Functions
 
 // Pixel Shader 
 float4 PS_Main(PS_Input input) : SV_Target
@@ -34,20 +51,20 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     // Ambient Lighting
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
-    float4 ambientLight = textureColor * 0.5f;
+    float4 ambientLight = textureColor * 0.35f;
     
-    // Directional Lighting
+    // Directional Lighting 
     float dirLightRatio = saturate(dot(-vLightDirection[0].xyz, input.normal)); // clamp(dot(-LightDir, SurfaceNormal))
-    dirOutputColor = dirLightRatio * vLightColor[0] * textureColor; // LightRatio * LightColor * SurfaceColor
+    dirOutputColor = dirLightRatio * vLightColor[2] * textureColor; // LightRatio * LightColor * SurfaceColor
     
-    // Point Light
-    float3 pointLightDir = normalize(vLightPosition[0].xyz - input.positionL); // LightDir = normalize(LightPos - SurfacePos)
+    // Point Light (position; no direction)
+    float3 pointLightDir = normalize(vLightPosition[0].xyz - input.positionW); // LightDir = normalize(LightPos - SurfacePos)
     float pointLightRatio = saturate(dot((float3)pointLightDir, input.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal)
     pointOutputColor = pointLightRatio * vLightColor[0] * textureColor; // Result = LightRatio * LightColor * SurfaceColor
 
     // Spotlight
-    float3 spotLightDir = normalize(vLightPosition[0].xyz - input.positionL); // LightDir = normalize(LightPos - SurfacePos)
-    float spotSurfaceRatio = saturate(dot(-vLightDirection[0].xyz, -input.normal)); // SurfaceRatio = clamp(dot(-LightDir, ConeDir))
+    float3 spotLightDir = normalize(vLightPosition[1].xyz - input.positionW); // LightDir = normalize(LightPos - SurfacePos)
+    float spotSurfaceRatio = saturate(dot(-spotLightDir, vLightDirection[0].xyz)); // SurfaceRatio = clamp(dot(-LightDir, ConeDir))
     // SpotFactor = (SurfaceRatio > ConeRatio) ? 1:0
     // LightRatio = clamp(dot(LightDir, SurfaceNormal))
     // Output = SpotFactor * LightRatio * LightColor * SurfaceColor

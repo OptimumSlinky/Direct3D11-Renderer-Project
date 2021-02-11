@@ -16,9 +16,9 @@ struct ConstantBuffer
 	XMMATRIX mWorld;
 	XMMATRIX mView;
 	XMMATRIX mProjection;
-	XMFLOAT4 vLightPosition[2];
-	XMFLOAT4 vLightDirection[2];
-	XMFLOAT4 vLightColor[2];
+	XMFLOAT4 vLightPosition[3];
+	XMFLOAT4 vLightDirection[3];
+	XMFLOAT4 vLightColor[3];
 	XMFLOAT4 vOutputColor;
 };
 
@@ -366,10 +366,10 @@ HRESULT Init3DContent()
 	};
 
 	// Create vertex shader and input layout from file
-	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "DEV4_VS.cso", layout, ARRAYSIZE(layout));
+	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", layout, ARRAYSIZE(layout));
 
 	// Create pixel shader from file
-	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "DEV4_PS.cso");
+	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
 
 	// Create 3D cube
 	SimpleMesh<SimpleVertex> newCube = CreateCube();
@@ -431,22 +431,25 @@ void Render()
 	g_World = XMMatrixRotationY(t);
 
 	//// Setup lighting parameters
-	XMFLOAT4 vLightPositions[2] =
+	XMFLOAT4 vLightPositions[3] =
 	{
-		XMFLOAT4(0.5f, 1.0f, 0.0f, 1.0f),
-		XMFLOAT4(-0.5f, -1.0f, 0.0f, 1.0f)
+		XMFLOAT4(3.5f, 1.5f, 0.0f, 1.0f),
+		XMFLOAT4(-3.5f, 3.0f, 0.0f, 1.0f),
+		XMFLOAT4(-3.5f, 3.0f, 0.0f, 1.0f),
 	};
 
-	XMFLOAT4 vLightDirections[2] =
+	XMFLOAT4 vLightDirections[3] =
 	{
-		XMFLOAT4(1.0f, -1.0f, 0.0f, 1.0f),
+		XMFLOAT4(4.0f, 0.0f, 0.0f, 1.0f),
+		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
 		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
 	};
 
-	XMFLOAT4 vLightColors[2] =
+	XMFLOAT4 vLightColors[3] =
 	{
-		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f),
-		XMFLOAT4(0.5f, 0.0f, 0.0f, 1.0f)
+		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), // r
+		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), // g
+		XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), // b
 	};
 
 	// Clear the back buffer 
@@ -461,15 +464,19 @@ void Render()
 	cb.mView = (g_View);
 	cb.mProjection = (g_Projection);
 	cb.vLightPosition[0] = vLightPositions[0];
+	cb.vLightPosition[1] = vLightPositions[1];
 	cb.vLightDirection[0] = vLightDirections[0];
+	cb.vLightDirection[1] = vLightDirections[1];
 	cb.vLightColor[0] = vLightColors[0];
+	cb.vLightColor[1] = vLightColors[1];
+	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
 	
 	// Render cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
-		cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
+	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
 	
 	// Render gridlines
 	GridConstantBuffer gridCB;

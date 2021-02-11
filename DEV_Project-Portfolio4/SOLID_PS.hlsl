@@ -23,7 +23,7 @@ struct PS_INPUT
 };
 
 // render a solid color
-float4 main(PS_INPUT input) : SV_TARGET
+float4 SOLID_PS(PS_INPUT input) : SV_TARGET
 {
     return vOutputColor;
 }

@@ -29,14 +29,16 @@ struct VS_Output
     // float4 color : COLOR;
     float3 normal : NORMAL;
     float2 tex : TEXCOORD0;
+    float3 positionW : WORLDPOSITION;
 };
 
 // Vertex shader
 VS_Output VS_Main( VS_Input input )
 {
     VS_Output output = (VS_Output)0;
-    output.positionH = mul(float4(input.positionL, 1), world);
-    output.positionH = mul(output.positionH, view);
+    output.positionH = mul(float4(input.positionL, 1), world); // Stores worldspace
+    output.positionW = output.positionH.xyz;
+    output.positionH = mul(output.positionH, view); // storing viewspace
     output.positionH = mul(output.positionH, projection);
     output.normal = mul(float4(input.normal, 0), world).xyz;
     output.tex = input.tex;
