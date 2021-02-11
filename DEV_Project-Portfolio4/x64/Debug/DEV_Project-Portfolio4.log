@@ -1,4 +1,2 @@
-﻿  DEV_Project-Portfolio4.cpp
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\RenderTools.h(74): warning C4715: 'ShaderMaterials::CreateDefaultSampler': not all control paths return a value
-Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\RenderTools.h(89): warning C4715: 'ShaderMaterials::CreateTextureFromFile': not all control paths return a value
+﻿  compilation object save succeeded; see Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\MAIN_PS.cso
   DEV_Project-Portfolio4.vcxproj -> Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe

@@ -28,26 +28,14 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     float4 outputColor = 0;
     
-    
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
     
     // Ambient Lighting
     float4 ambientLight = textureColor * 0.5f;
     
     // Directional Lighting
-    float dirLightRatio;
-    dirLightRatio = saturate(dot(-vLightDirection[0].xyz, input.normal));
+    float dirLightRatio = saturate(dot(-vLightDirection[0].xyz, input.normal));
     outputColor = dirLightRatio * vLightColor[0] * textureColor;
-    
-    // TODO: Point Lighting
-    
-    
-    //// 
-    //for (int i = 0; i < 2; i++)
-    //{
-    //    outputColor += saturate(dot((float3) vLightDirection[i], input.normal) * vLightColor[i]);
-    //}
-    
     
     outputColor.a = 1;
     return saturate(outputColor + ambientLight);
