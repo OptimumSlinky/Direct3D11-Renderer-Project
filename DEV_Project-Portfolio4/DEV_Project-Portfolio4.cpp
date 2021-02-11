@@ -16,6 +16,7 @@ struct ConstantBuffer
 	XMMATRIX mWorld;
 	XMMATRIX mView;
 	XMMATRIX mProjection;
+	XMFLOAT4 vLightPosition[2];
 	XMFLOAT4 vLightDirection[2];
 	XMFLOAT4 vLightColor[2];
 	XMFLOAT4 vOutputColor;
@@ -430,6 +431,12 @@ void Render()
 	g_World = XMMatrixRotationY(t);
 
 	//// Setup lighting parameters
+	XMFLOAT4 vLightPositions[2] =
+	{
+		XMFLOAT4(0.5f, 1.0f, 0.0f, 1.0f),
+		XMFLOAT4(-0.5f, -1.0f, 0.0f, 1.0f)
+	};
+
 	XMFLOAT4 vLightDirections[2] =
 	{
 		XMFLOAT4(1.0f, -1.0f, 0.0f, 1.0f),
@@ -453,6 +460,7 @@ void Render()
 	cb.mWorld = (g_World);
 	cb.mView = (g_View);
 	cb.mProjection = (g_Projection);
+	cb.vLightPosition[0] = vLightPositions[0];
 	cb.vLightDirection[0] = vLightDirections[0];
 	cb.vLightColor[0] = vLightColors[0];
 	cb.vOutputColor = g_vOutputColor;
