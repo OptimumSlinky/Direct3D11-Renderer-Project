@@ -461,9 +461,7 @@ void Render()
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
-	//g_pImmediateContext->PSSetShaderResources(0, 1, &g_pTextureRV);
-	//g_pImmediateContext->PSSetSamplers(0, 1, &g_pSamplerLinear);
-	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
+		cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
 	
 	// Render gridlines
 	GridConstantBuffer gridCB;
@@ -481,10 +479,6 @@ void Render()
 void CleanupDevice()
 {
 	if (g_pImmediateContext) g_pImmediateContext->ClearState();
-	/*if (g_pVertexBuffer) g_pVertexBuffer->Release();
-	if (g_pVertexLayout) g_pVertexLayout->Release();
-	if (g_pVertexShader) g_pVertexShader->Release();
-	if (g_pPixelShader) g_pPixelShader->Release();*/
 	if (g_pDepthStencil) g_pDepthStencil->Release();
 	if (g_pDepthStencilView) g_pDepthStencilView->Release();
 	if (g_pTextureRV) g_pTextureRV->Release();
