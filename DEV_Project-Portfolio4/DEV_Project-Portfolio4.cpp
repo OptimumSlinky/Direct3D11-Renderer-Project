@@ -471,7 +471,7 @@ void Render()
 	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Stage 2: Get user input and apply motion
-	float moveScale = 0.0025f;
+	float moveScale = 0.025f;
 
 	if (GetAsyncKeyState('W'))
 	{
@@ -502,8 +502,8 @@ void Render()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationY(-t * 0.00025f); // Rotate
-		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order (not needed if matrix set at origin)
+		XMMATRIX temp = XMMatrixRotationY(-t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
 
@@ -512,8 +512,8 @@ void Render()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationY(t * 0.00025f); // Rotate
-		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order (not needed if matrix set at origin)
+		XMMATRIX temp = XMMatrixRotationY(t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
 
