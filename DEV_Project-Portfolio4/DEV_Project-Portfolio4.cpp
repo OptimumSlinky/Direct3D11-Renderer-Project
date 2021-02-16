@@ -64,6 +64,7 @@ ComPtr<ID3D11ShaderResourceView> g_pTextureRV = nullptr;
 ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
 
 // Matrices 
+XMMATRIX				g_Camera;
 XMMATRIX                g_World;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
@@ -354,6 +355,9 @@ HRESULT InitDevice()
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(Eye, At, Up);
 
+	// Stage 1: Convert Camera to World Space (for camera control)
+	g_Camera = XMMatrixInverse(nullptr, g_View);
+
 	// Initialize projection matrix
 	g_Projection = XMMatrixPerspectiveFovLH(XM_PIDIV2, width / (FLOAT)height, 0.01f, 100.0f);
 
@@ -466,11 +470,62 @@ void Render()
 	// Clear the depth buffer to max depth (1.0f)
 	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
+	// Stage 2: Get user input and apply motion
+	float moveScale = 0.0025f;
+
+	if (GetAsyncKeyState('W'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, 0, moveScale);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('S'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, 0, -moveScale);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('A'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(-moveScale, 0, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('D'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(moveScale, 0, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+	
+	if (GetAsyncKeyState('Q'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationY(-t * 0.00025f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order (not needed if matrix set at origin)
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('E'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationY(t * 0.00025f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order (not needed if matrix set at origin)
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	// Stage 3: Convert updated camera back to View Space
+	g_View = XMMatrixInverse(nullptr, g_Camera);
+
 	// Update 
 	ConstantBuffer cb;
 	cb.mWorld = (g_World);
 	cb.mView = (g_View);
 	cb.mProjection = (g_Projection);
+
 	cb.vLightPosition[0] = vLightPositions[0];
 	cb.vLightPosition[1] = vLightPositions[1];
 	cb.vLightDirection[0] = vLightDirections[0];
@@ -479,13 +534,13 @@ void Render()
 	cb.vLightColor[1] = vLightColors[1];
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
-	
+
 	// Render cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
 	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
-	
+
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
@@ -497,7 +552,7 @@ void Render()
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	g_pSwapChain->Present(0, 0);
-}
+};
 
 void CleanupDevice()
 {
