@@ -40,9 +40,10 @@ struct GridConstantBuffer
 // Global variables
 LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
 LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
-const LONG g_WindowWidth = 1280;
-const LONG g_WindowHeight = 720;
+LONG g_WindowWidth = 1280;
+LONG g_WindowHeight = 720;
 const BOOL g_EnableVSync = TRUE;
+POINT mousePOS;
 
 // Direct3D global variables
 HINSTANCE               g_hInst = nullptr;
@@ -515,6 +516,18 @@ void Render()
 		XMMATRIX temp = XMMatrixRotationY(t * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('R'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, moveScale, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('F'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, -moveScale, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
 	}
 
 	// Stage 3: Convert updated camera back to View Space
