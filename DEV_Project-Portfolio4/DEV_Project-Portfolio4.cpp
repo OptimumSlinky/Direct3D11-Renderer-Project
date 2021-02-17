@@ -370,7 +370,7 @@ HRESULT Init3DContent()
 	HRESULT hr = S_OK;
 
 	// TODO: define input layout
-	D3D11_INPUT_ELEMENT_DESC layout[] =
+	D3D11_INPUT_ELEMENT_DESC cubeLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -379,7 +379,7 @@ HRESULT Init3DContent()
 	};
 
 	// Create vertex shader and input layout from file
-	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", layout, ARRAYSIZE(layout));
+	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
 
 	// Create pixel shader from file
 	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
