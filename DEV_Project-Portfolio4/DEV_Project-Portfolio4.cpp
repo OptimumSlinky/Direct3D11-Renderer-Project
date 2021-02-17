@@ -11,13 +11,6 @@ using namespace DirectX;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
-struct LightObj
-{
-	XMFLOAT4 position;
-	XMFLOAT4 color;
-	XMFLOAT4 direction;
-};
-
 struct ConstantBuffer
 {
 	XMMATRIX mWorld;
@@ -35,7 +28,6 @@ struct GridConstantBuffer
 	XMMATRIX gridView;
 	XMMATRIX gridProjection;
 };
-
 
 // Global variables
 LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
@@ -67,6 +59,7 @@ ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
 // Matrices 
 XMMATRIX				g_Camera;
 XMMATRIX                g_World;
+XMMATRIX                g_World2;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -349,6 +342,7 @@ HRESULT InitDevice()
 
 	// Initialize world matrix
 	g_World = XMMatrixIdentity();
+	g_World2 = XMMatrixIdentity();
 
 	// Initialize view matrix
 	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -3.0f, 0.0f);
@@ -373,7 +367,6 @@ HRESULT Init3DContent()
 	D3D11_INPUT_ELEMENT_DESC cubeLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		// { "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
@@ -440,8 +433,15 @@ void Render()
 		t = (timeCurrent - timeStart) / 1000.0f;
 	}
 
-	// Rotate cube
+	// Rotate first cube around the origin
 	g_World = XMMatrixRotationY(t);
+
+	// Orbit second cube around the origin
+	XMMATRIX spin = XMMatrixRotationZ(-t);
+	XMMATRIX orbit = XMMatrixRotationY(-t * 1.0f);
+	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
+	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	g_World2 = downscale * spin * translate * orbit;
 
 	//// Setup lighting parameters
 	XMFLOAT4 vLightPositions[3] =
@@ -533,7 +533,7 @@ void Render()
 	// Stage 3: Convert updated camera back to View Space
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
-	// Update 
+	// Update for first cube
 	ConstantBuffer cb;
 	cb.mWorld = (g_World);
 	cb.mView = (g_View);
@@ -548,12 +548,34 @@ void Render()
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
 
-	// Render cube
+	// Render first cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
-	cubeBufferController.BindAndDraw(g_pImmediateContext.Get());
+	cubeBufferController.Bind(g_pImmediateContext.Get());
+	g_pImmediateContext->DrawIndexed(36, 0, 0);
 
+	// Update for second cube
+	ConstantBuffer cb2;
+	cb2.mWorld = (g_World2);
+	cb2.mView = (g_View);
+	cb2.mProjection = (g_Projection);
+	cb2.vLightPosition[0] = vLightPositions[0];
+	cb2.vLightPosition[1] = vLightPositions[1];
+	cb2.vLightDirection[0] = vLightDirections[0];
+	cb2.vLightDirection[1] = vLightDirections[1];
+	cb2.vLightColor[0] = vLightColors[0];
+	cb2.vLightColor[1] = vLightColors[1];
+	cb2.vLightColor[2] = vLightColors[2];
+	cb2.vOutputColor = g_vOutputColor;
+	
+	// Render second cube
+	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
+	cubeShaderController.Bind(g_pImmediateContext.Get());
+	cubeBufferController.Bind(g_pImmediateContext.Get());
+	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
