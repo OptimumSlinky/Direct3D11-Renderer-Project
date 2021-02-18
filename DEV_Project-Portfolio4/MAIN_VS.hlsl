@@ -3,7 +3,7 @@
 // Constant buffer
 cbuffer ConstantBuffer : register(b0)
 {
-    matrix world;
+    matrix world[3];
     matrix view;
     matrix projection;
     float4 vLightDirection[2];
@@ -28,17 +28,19 @@ struct VS_Output
     float3 normal : NORMAL;
     float2 tex : TEXCOORD0;
     float3 positionW : WORLDPOSITION;
+    // uint instance;
 };
 
 // Vertex shader
-VS_Output VS_Main( VS_Input input )
+VS_Output VS_Main( VS_Input input, uint instance : SV_InstanceID )
 {
     VS_Output output = (VS_Output)0;
-    output.positionH = mul(float4(input.positionL, 1), world); // Stores worldspace
+    output.positionH = mul(float4(input.positionL, 1), world[instance]); // Stores worldspace
     output.positionW = output.positionH.xyz;
     output.positionH = mul(output.positionH, view); // storing viewspace
     output.positionH = mul(output.positionH, projection);
-    output.normal = mul(float4(input.normal, 0), world).xyz;
+    output.normal = mul(float4(input.normal, 0), world[instance]).xyz;
     output.tex = input.tex;
+  
     return output;
 }
