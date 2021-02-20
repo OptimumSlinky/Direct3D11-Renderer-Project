@@ -11,9 +11,18 @@ using namespace DirectX;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
+// Global variables
+LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
+LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
+LONG g_WindowWidth = 1280;
+LONG g_WindowHeight = 720;
+const BOOL g_EnableVSync = TRUE;
+POINT mousePOS;
+const UINT boxCount = 3;
+
 struct ConstantBuffer
 {
-	XMMATRIX mWorld;
+	XMMATRIX mWorld[boxCount];
 	XMMATRIX mView;
 	XMMATRIX mProjection;
 	XMFLOAT4 vLightPosition[3];
@@ -28,14 +37,6 @@ struct GridConstantBuffer
 	XMMATRIX gridView;
 	XMMATRIX gridProjection;
 };
-
-// Global variables
-LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
-LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
-LONG g_WindowWidth = 1280;
-LONG g_WindowHeight = 720;
-const BOOL g_EnableVSync = TRUE;
-POINT mousePOS;
 
 // Direct3D global variables
 HINSTANCE               g_hInst = nullptr;
@@ -58,7 +59,7 @@ ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
 
 // Matrices 
 XMMATRIX				g_Camera;
-XMMATRIX                g_World;
+XMMATRIX                g_World[boxCount];
 XMMATRIX                g_World2;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
@@ -341,7 +342,12 @@ HRESULT InitDevice()
 	g_pImmediateContext->RSSetViewports(1, &vp);
 
 	// Initialize world matrix
-	g_World = XMMatrixIdentity();
+	// Add for loop to cycle through array
+	for (UINT i = 0; i < boxCount; i++)
+	{
+		g_World[i] = XMMatrixIdentity();
+	}
+
 	g_World2 = XMMatrixIdentity();
 
 	// Initialize view matrix
@@ -369,6 +375,7 @@ HRESULT Init3DContent()
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		// { "INSTANCE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 
 	// Create vertex shader and input layout from file
@@ -433,8 +440,8 @@ void Render()
 		t = (timeCurrent - timeStart) / 1000.0f;
 	}
 
-	// Rotate first cube around the origin
-	g_World = XMMatrixRotationY(t);
+	// Spin first cube around the origin
+	g_World[0] = XMMatrixRotationY(t);
 
 	// Orbit second cube around the origin
 	XMMATRIX spin = XMMatrixRotationZ(-t);
@@ -497,7 +504,7 @@ void Render()
 		XMMATRIX temp = XMMatrixTranslation(moveScale, 0, 0);
 		g_Camera = XMMatrixMultiply(temp, g_Camera);
 	}
-	
+
 	if (GetAsyncKeyState('Q'))
 	{
 		// To solve weird rotation angles (for global rotation)
@@ -533,11 +540,20 @@ void Render()
 	// Stage 3: Convert updated camera back to View Space
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
-	// Update for first cube
+	// Update for multiple cubes
 	ConstantBuffer cb;
-	cb.mWorld = (g_World);
+	cb.mWorld[0] = g_World[0];
+	cb.mWorld[1] = g_World[1];
+	cb.mWorld[2] = g_World[2];
 	cb.mView = (g_View);
 	cb.mProjection = (g_Projection);
+
+	// Position and rotate instanced cubes
+	XMMATRIX instanceSpin = XMMatrixRotationY(t);
+	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
+	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
+	cb.mWorld[1] = instanceSpin * instancePOS1;
+	cb.mWorld[2] = instanceSpin * instancePOS2;
 
 	cb.vLightPosition[0] = vLightPositions[0];
 	cb.vLightPosition[1] = vLightPositions[1];
@@ -548,18 +564,19 @@ void Render()
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
 
-	// Render first cube
+	// Render instanced cubes
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
 	cubeBufferController.Bind(g_pImmediateContext.Get());
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	g_pImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
 	// Update for second cube
 	ConstantBuffer cb2;
-	cb2.mWorld = (g_World2);
+	cb2.mWorld[0] = g_World2;
 	cb2.mView = (g_View);
 	cb2.mProjection = (g_Projection);
+
 	cb2.vLightPosition[0] = vLightPositions[0];
 	cb2.vLightPosition[1] = vLightPositions[1];
 	cb2.vLightDirection[0] = vLightDirections[0];
@@ -568,14 +585,14 @@ void Render()
 	cb2.vLightColor[1] = vLightColors[1];
 	cb2.vLightColor[2] = vLightColors[2];
 	cb2.vOutputColor = g_vOutputColor;
-	
-	// Render second cube
+
+	// Render orbit cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
 	cubeBufferController.Bind(g_pImmediateContext.Get());
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
-	
+
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();

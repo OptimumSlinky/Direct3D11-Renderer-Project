@@ -9,7 +9,7 @@ struct LightObj
 
 cbuffer ConstantBuffer : register(b0)
 {
-    matrix world;
+    matrix world[3];
     matrix view;
     matrix projection;
     float4 vLightPosition[3];

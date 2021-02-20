@@ -1,6 +1,6 @@
 Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
 Z:\Full Sail - Game Dev\Project and Portfolio 4 - Direct3D 11\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.pdb
-S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
-S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.pdb
 C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
 C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.pdb
+S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
+S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.pdb
