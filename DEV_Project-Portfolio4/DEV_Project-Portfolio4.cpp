@@ -440,7 +440,7 @@ void Render()
 		t = (timeCurrent - timeStart) / 1000.0f;
 	}
 
-	// Rotate first cube around the origin
+	// Spin first cube around the origin
 	g_World[0] = XMMatrixRotationY(t);
 
 	// Orbit second cube around the origin
@@ -542,14 +542,18 @@ void Render()
 
 	// Update for multiple cubes
 	ConstantBuffer cb;
-	cb.mWorld[1] = XMMatrixTranslation(4.0f, 2.0f, 1.0f);
-	cb.mWorld[2] = XMMatrixTranslation(-2.0f, -3.0f, 1.0f);
-
 	cb.mWorld[0] = g_World[0];
 	cb.mWorld[1] = g_World[1];
 	cb.mWorld[2] = g_World[2];
 	cb.mView = (g_View);
 	cb.mProjection = (g_Projection);
+
+	// Position and rotate instanced cubes
+	XMMATRIX instanceSpin = XMMatrixRotationY(t);
+	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
+	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
+	cb.mWorld[1] = instanceSpin * instancePOS1;
+	cb.mWorld[2] = instanceSpin * instancePOS2;
 
 	cb.vLightPosition[0] = vLightPositions[0];
 	cb.vLightPosition[1] = vLightPositions[1];
@@ -572,6 +576,7 @@ void Render()
 	cb2.mWorld[0] = g_World2;
 	cb2.mView = (g_View);
 	cb2.mProjection = (g_Projection);
+
 	cb2.vLightPosition[0] = vLightPositions[0];
 	cb2.vLightPosition[1] = vLightPositions[1];
 	cb2.vLightDirection[0] = vLightDirections[0];
@@ -581,7 +586,7 @@ void Render()
 	cb2.vLightColor[2] = vLightColors[2];
 	cb2.vOutputColor = g_vOutputColor;
 
-	// Render second cube
+	// Render orbit cube
 	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
 	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
 	cubeShaderController.Bind(g_pImmediateContext.Get());
