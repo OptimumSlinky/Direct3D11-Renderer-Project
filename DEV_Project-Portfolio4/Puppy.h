@@ -33,7 +33,7 @@ typedef struct _OBJ_VERT_
 #endif
 #ifndef _Puppy_data_
 // Raw Vertex Data follows: Positions, Texture Coordinates and Normals.
-OBJ_VERT Puppy_data[6573] =
+const OBJ_VERT Puppy_data[6573] =
 {
 	{	{ -667.116089f, 436.498047f, -381.823486f },	{ 0.000000f, 1.000000f, 0.000000f },	{ 0.686190f, -0.230762f, 0.689849f }	},
 	{	{ -669.926514f, 417.240662f, -385.469757f },	{ 0.000000f, 0.950000f, 0.000000f },	{ 0.686190f, -0.230761f, 0.689849f }	},
@@ -6613,7 +6613,7 @@ OBJ_VERT Puppy_data[6573] =
 #endif
 #ifndef _Puppy_indicies_
 // Index Data follows: Sequential by mesh, Every Three Indicies == One Triangle.
-unsigned int Puppy_indicies[31914] =
+const int Puppy_indicies[31914] =
 {
 	 0, 1, 2,
 	 3, 0, 2,

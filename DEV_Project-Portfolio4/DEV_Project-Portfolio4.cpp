@@ -57,6 +57,9 @@ ComPtr<ID3D11Texture2D> g_pDepthStencil = nullptr;
 ComPtr<ID3D11DepthStencilView> g_pDepthStencilView = nullptr;
 ComPtr<ID3D11ShaderResourceView> g_pTextureRV = nullptr;
 ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
+ComPtr<ID3D11InputLayout> gpuPuppyVertLayout = nullptr;
+ComPtr<ID3D11Buffer> gpuPuppyVertBuffer = nullptr;
+
 
 // Matrices 
 XMMATRIX				g_Camera;
@@ -166,6 +169,41 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
+
+	return S_OK;
+}
+
+// Legacy helper for compiling shaders with D3DCompile
+// From MSDN tutorials
+HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
+{
+	HRESULT hr = S_OK;
+
+	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
+#ifdef _DEBUG
+	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
+	// Setting this flag improves the shader debugging experience, but still allows 
+	// the shaders to be optimized and to run exactly the way they will run in 
+	// the release configuration of this program.
+	dwShaderFlags |= D3DCOMPILE_DEBUG;
+
+	// Disable optimizations to further improve shader debugging
+	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
+#endif
+
+	ID3DBlob* pErrorBlob = nullptr;
+	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
+		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
+	if (FAILED(hr))
+	{
+		if (pErrorBlob)
+		{
+			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
+			pErrorBlob->Release();
+		}
+		return hr;
+	}
+	if (pErrorBlob) pErrorBlob->Release();
 
 	return S_OK;
 }
@@ -432,10 +470,14 @@ HRESULT Init3DContent()
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
 	UINT puppyElements = ARRAYSIZE(puppyLayout);
-	// g_pd3dDevice.Get()->CreateInputLayout(puppyLayout, puppyElements, )
+	hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
+
+	// Create puppy pixel shader
+	hr = puppyShader.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
 
 	// Create puppy vertex buffer
-	
+	hr = puppyBuffer.CreateBuffers(g_pd3dDevice.Get(), &Puppy_indicies, &Puppy_data);
+
 
 
 	return S_OK;
