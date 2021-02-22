@@ -2,6 +2,7 @@
 // Started: January 2020
 // Trevor Cook
 
+#pragma region Project Set Up
 #include "Resource.h"
 #include "RenderTools.h"
 #include "MeshTools.h"
@@ -89,7 +90,9 @@ HRESULT InitDevice();
 HRESULT Init3DContent();
 void CleanupDevice();
 void Render();
+#pragma endregion
 
+#pragma region Win 32 API 
 // Entry point for the application.
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -170,6 +173,71 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 	return S_OK;
 }
 
+//  Processes messages for the main window.
+//  WM_COMMAND  - process the application menu
+//  WM_PAINT    - Paint the main window
+//  WM_DESTROY  - post a quit message and return
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+		// Parse the menu selections:
+		switch (wmId)
+		{
+		case IDM_ABOUT:
+			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
+			break;
+		case IDM_EXIT:
+			DestroyWindow(hWnd);
+			break;
+		default:
+			return DefWindowProc(hWnd, message, wParam, lParam);
+		}
+	}
+	break;
+	case WM_PAINT:
+	{
+		PAINTSTRUCT ps;
+		HDC hdc = BeginPaint(hWnd, &ps);
+		// TODO: Add any drawing code that uses hdc here...
+		EndPaint(hWnd, &ps);
+	}
+	break;
+	case WM_DESTROY:
+		PostQuitMessage(0);
+		break;
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+
+// Message handler for about box
+INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	UNREFERENCED_PARAMETER(lParam);
+	switch (message)
+	{
+	case WM_INITDIALOG:
+		return (INT_PTR)TRUE;
+
+	case WM_COMMAND:
+		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
+		{
+			EndDialog(hDlg, LOWORD(wParam));
+			return (INT_PTR)TRUE;
+		}
+		break;
+	}
+	return (INT_PTR)FALSE;
+}
+#pragma endregion
+
+#pragma region Direct3D Device Initialization
 // Create Direct3D device and swap chain
 HRESULT InitDevice()
 {
@@ -370,7 +438,9 @@ HRESULT InitDevice()
 
 	return S_OK;
 };
+#pragma endregion
 
+#pragma region 3D Content Initialization
 HRESULT Init3DContent()
 {
 	HRESULT hr = S_OK;
@@ -440,9 +510,9 @@ HRESULT Init3DContent()
 
 	return S_OK;
 }
+#pragma endregion
 
-
-
+#pragma region Deployment & Clean Up
 void Render()
 {
 	// Update time
@@ -641,66 +711,4 @@ void CleanupDevice()
 	if (g_pd3dDevice1) g_pd3dDevice1->Release();
 	if (g_pd3dDevice) g_pd3dDevice->Release();
 }
-
-//  Processes messages for the main window.
-//  WM_COMMAND  - process the application menu
-//  WM_PAINT    - Paint the main window
-//  WM_DESTROY  - post a quit message and return
-LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
-		{
-		case IDM_ABOUT:
-			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
-			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-		}
-	}
-	break;
-	case WM_PAINT:
-	{
-		PAINTSTRUCT ps;
-		HDC hdc = BeginPaint(hWnd, &ps);
-		// TODO: Add any drawing code that uses hdc here...
-		EndPaint(hWnd, &ps);
-	}
-	break;
-	case WM_DESTROY:
-		PostQuitMessage(0);
-		break;
-	default:
-		return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-	return 0;
-}
-
-
-// Message handler for about box
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
+#pragma endregion
