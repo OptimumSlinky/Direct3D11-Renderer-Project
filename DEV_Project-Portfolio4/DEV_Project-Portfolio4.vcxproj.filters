@@ -45,9 +45,6 @@
     <ClInclude Include="Puppy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Crate.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEV_Project-Portfolio4.cpp">

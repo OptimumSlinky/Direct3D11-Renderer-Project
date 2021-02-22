@@ -151,7 +151,6 @@
     </FxCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="Crate.h" />
     <ClInclude Include="DDSTextureLoader.h" />
     <ClInclude Include="DEV_Project-Portfolio4.h" />
     <ClInclude Include="framework.h" />

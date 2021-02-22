@@ -4,14 +4,6 @@
 using namespace DirectX;
 using namespace std;
 
-// Structures
-struct SimpleVertex
-{
-	XMFLOAT3 position;
-	XMFLOAT3 normal;
-	XMFLOAT2 texture;
-};
-
 SimpleVertex crateVertices[]=
 {
 	// Top

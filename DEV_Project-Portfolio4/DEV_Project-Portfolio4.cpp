@@ -5,7 +5,6 @@
 #pragma region Project Set Up
 #include "Resource.h"
 #include "RenderTools.h"
-#include "Crate.h"
 #include "MeshTools.h"
 #include "Grid.h"
 #include "Puppy.h"
@@ -564,7 +563,7 @@ void Render()
 	};
 
 	// Clear the back buffer 
-	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::MidnightBlue);
+	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::Black);
 
 	// Clear the depth buffer to max depth (1.0f)
 	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
@@ -618,14 +617,39 @@ void Render()
 
 	if (GetAsyncKeyState('R'))
 	{
-		XMMATRIX temp = XMMatrixTranslation(0, moveScale, 0);
-		g_Camera = XMMatrixMultiply(temp, g_Camera);
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationX(-t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
 	}
 
 	if (GetAsyncKeyState('F'))
 	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationX(t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('T'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, moveScale, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('G'))
+	{
 		XMMATRIX temp = XMMatrixTranslation(0, -moveScale, 0);
 		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetCursorPos)
+	{
+		
 	}
 
 	// Stage 3: Convert updated camera back to View Space
