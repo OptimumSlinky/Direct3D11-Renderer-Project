@@ -5,6 +5,7 @@
 #pragma region Project Set Up
 #include "Resource.h"
 #include "RenderTools.h"
+#include "Crate.h"
 #include "MeshTools.h"
 #include "Grid.h"
 #include "Puppy.h"
@@ -47,17 +48,17 @@ D3D_DRIVER_TYPE         g_driverType = D3D_DRIVER_TYPE_NULL;
 D3D_FEATURE_LEVEL       g_featureLevel = D3D_FEATURE_LEVEL_11_0;
 
 // Direct3D device and swap chain
-ComPtr<ID3D11Device> g_pd3dDevice = nullptr;
-ComPtr<ID3D11Device1> g_pd3dDevice1 = nullptr;
-ComPtr<ID3D11DeviceContext> g_pImmediateContext = nullptr;
-ComPtr<ID3D11DeviceContext1> g_pImmediateContext1 = nullptr;
-ComPtr<IDXGISwapChain> g_pSwapChain = nullptr;
-ComPtr<IDXGISwapChain1> g_pSwapChain1 = nullptr;
-ComPtr<ID3D11RenderTargetView> g_pRenderTargetView = nullptr;
-ComPtr<ID3D11Texture2D> g_pDepthStencil = nullptr;
-ComPtr<ID3D11DepthStencilView> g_pDepthStencilView = nullptr;
-ComPtr<ID3D11ShaderResourceView> g_pTextureRV = nullptr;
-ComPtr<ID3D11SamplerState> g_pSamplerLinear = nullptr;
+ComPtr<ID3D11Device> gpD3D_Device = nullptr;
+ComPtr<ID3D11Device1> gpD3D_Device1 = nullptr;
+ComPtr<ID3D11DeviceContext> gpImmediateContext = nullptr;
+ComPtr<ID3D11DeviceContext1> gpImmediateContext1 = nullptr;
+ComPtr<IDXGISwapChain> gpSwapChain = nullptr;
+ComPtr<IDXGISwapChain1> gpSwapChain1 = nullptr;
+ComPtr<ID3D11RenderTargetView> gpRenderTargetView = nullptr;
+ComPtr<ID3D11Texture2D> gpDepthStencil = nullptr;
+ComPtr<ID3D11DepthStencilView> gpDepthStencilView = nullptr;
+ComPtr<ID3D11ShaderResourceView> gpTextureRV = nullptr;
+ComPtr<ID3D11SamplerState> gpSamplerLinear = nullptr;
 
 // Matrices 
 XMMATRIX				g_Camera;
@@ -274,13 +275,13 @@ HRESULT InitDevice()
 	{
 		g_driverType = driverTypes[driverTypeIndex];
 		hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, featureLevels, numFeatureLevels,
-			D3D11_SDK_VERSION, g_pd3dDevice.GetAddressOf(), &g_featureLevel, g_pImmediateContext.GetAddressOf());
+			D3D11_SDK_VERSION, gpD3D_Device.GetAddressOf(), &g_featureLevel, gpImmediateContext.GetAddressOf());
 
 		if (hr == E_INVALIDARG)
 		{
 			// DirectX 11.0 platforms will not recognize D3D_FEATURE_LEVEL_11_1 so we need to retry without it
 			hr = D3D11CreateDevice(nullptr, g_driverType, nullptr, createDeviceFlags, &featureLevels[1], numFeatureLevels - 1,
-				D3D11_SDK_VERSION, g_pd3dDevice.GetAddressOf(), &g_featureLevel, g_pImmediateContext.GetAddressOf());
+				D3D11_SDK_VERSION, gpD3D_Device.GetAddressOf(), &g_featureLevel, gpImmediateContext.GetAddressOf());
 		}
 
 		if (SUCCEEDED(hr))
@@ -293,7 +294,7 @@ HRESULT InitDevice()
 	IDXGIFactory1* dxgiFactory = nullptr;
 	{
 		IDXGIDevice* dxgiDevice = nullptr;
-		hr = g_pd3dDevice->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
+		hr = gpD3D_Device->QueryInterface(__uuidof(IDXGIDevice), reinterpret_cast<void**>(&dxgiDevice));
 		if (SUCCEEDED(hr))
 		{
 			IDXGIAdapter* adapter = nullptr;
@@ -315,10 +316,10 @@ HRESULT InitDevice()
 	if (dxgiFactory2)
 	{
 		// DirectX 11.1 or later
-		hr = g_pd3dDevice->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(g_pd3dDevice1.GetAddressOf()));
+		hr = gpD3D_Device->QueryInterface(__uuidof(ID3D11Device1), reinterpret_cast<void**>(gpD3D_Device1.GetAddressOf()));
 		if (SUCCEEDED(hr))
 		{
-			(void)g_pImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(g_pImmediateContext1.GetAddressOf()));
+			(void)gpImmediateContext->QueryInterface(__uuidof(ID3D11DeviceContext1), reinterpret_cast<void**>(gpImmediateContext1.GetAddressOf()));
 		}
 
 		DXGI_SWAP_CHAIN_DESC1 sd = {};
@@ -330,10 +331,10 @@ HRESULT InitDevice()
 		sd.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
 		sd.BufferCount = 1;
 
-		hr = dxgiFactory2->CreateSwapChainForHwnd(g_pd3dDevice.Get(), g_hWnd, &sd, nullptr, nullptr, g_pSwapChain1.GetAddressOf());
+		hr = dxgiFactory2->CreateSwapChainForHwnd(gpD3D_Device.Get(), g_hWnd, &sd, nullptr, nullptr, gpSwapChain1.GetAddressOf());
 		if (SUCCEEDED(hr))
 		{
-			hr = g_pSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(g_pSwapChain.GetAddressOf()));
+			hr = gpSwapChain1->QueryInterface(__uuidof(IDXGISwapChain), reinterpret_cast<void**>(gpSwapChain.GetAddressOf()));
 		}
 
 		dxgiFactory2->Release();
@@ -354,7 +355,7 @@ HRESULT InitDevice()
 		sd.SampleDesc.Quality = 0;
 		sd.Windowed = TRUE;
 
-		hr = dxgiFactory->CreateSwapChain(g_pd3dDevice.Get(), &sd, g_pSwapChain.GetAddressOf());
+		hr = dxgiFactory->CreateSwapChain(gpD3D_Device.Get(), &sd, gpSwapChain.GetAddressOf());
 	}
 
 	dxgiFactory->Release();
@@ -364,11 +365,11 @@ HRESULT InitDevice()
 
 	// Create a render target view
 	ID3D11Texture2D* pBackBuffer = nullptr;
-	hr = g_pSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
+	hr = gpSwapChain->GetBuffer(0, __uuidof(ID3D11Texture2D), reinterpret_cast<void**>(&pBackBuffer));
 	if (FAILED(hr))
 		return hr;
 
-	hr = g_pd3dDevice->CreateRenderTargetView(pBackBuffer, nullptr, g_pRenderTargetView.GetAddressOf());
+	hr = gpD3D_Device->CreateRenderTargetView(pBackBuffer, nullptr, gpRenderTargetView.GetAddressOf());
 	pBackBuffer->Release();
 	if (FAILED(hr))
 		return hr;
@@ -386,7 +387,7 @@ HRESULT InitDevice()
 	descDepth.BindFlags = D3D11_BIND_DEPTH_STENCIL;
 	descDepth.CPUAccessFlags = 0;
 	descDepth.MiscFlags = 0;
-	hr = g_pd3dDevice->CreateTexture2D(&descDepth, nullptr, g_pDepthStencil.GetAddressOf());
+	hr = gpD3D_Device->CreateTexture2D(&descDepth, nullptr, gpDepthStencil.GetAddressOf());
 	if (FAILED(hr))
 	{
 		return hr;
@@ -397,13 +398,13 @@ HRESULT InitDevice()
 	descDSView.Format = descDepth.Format;
 	descDSView.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 	descDSView.Texture2D.MipSlice = 0;
-	hr = g_pd3dDevice->CreateDepthStencilView(g_pDepthStencil.Get(), &descDSView, g_pDepthStencilView.GetAddressOf());
+	hr = gpD3D_Device->CreateDepthStencilView(gpDepthStencil.Get(), &descDSView, gpDepthStencilView.GetAddressOf());
 	if (FAILED(hr))
 	{
 		return hr;
 	}
 
-	g_pImmediateContext->OMSetRenderTargets(1, g_pRenderTargetView.GetAddressOf(), g_pDepthStencilView.Get());
+	gpImmediateContext->OMSetRenderTargets(1, gpRenderTargetView.GetAddressOf(), gpDepthStencilView.Get());
 
 	// Setup the viewport
 	D3D11_VIEWPORT vp;
@@ -413,7 +414,7 @@ HRESULT InitDevice()
 	vp.MaxDepth = 1.0f;
 	vp.TopLeftX = 0;
 	vp.TopLeftY = 0;
-	g_pImmediateContext->RSSetViewports(1, &vp);
+	gpImmediateContext->RSSetViewports(1, &vp);
 
 	// Initialize world matrix
 	// Add for loop to cycle through array
@@ -455,33 +456,33 @@ HRESULT Init3DContent()
 	};
 
 	// Create vertex shader and input layout from file
-	hr = cubeShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
+	hr = cubeShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
 
 	// Create pixel shader from file
-	hr = cubeShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
+	hr = cubeShaderController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create 3D cube
-	SimpleMesh<SimpleVertex> newCube = CreateCube();
+	SimpleMesh<SimpleVertex> crate = CreateCube();
 
 	// Create vertex buffers
-	cubeBufferController.CreateBuffers(g_pd3dDevice.Get(), newCube.indicesList, newCube.vertexList);
+	cubeBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indicesList, crate.vertexList);
 
 	// Create constant buffer
-	cubeShaderController.CreateVSConstantBuffer(g_pd3dDevice.Get(), sizeof(ConstantBuffer));
+	cubeShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
 	cubeShaderController.PS_ConstantBuffer = cubeShaderController.VS_ConstantBuffer;
 
 	// Load texture 
-	cubeShaderMaterials.CreateTextureFromFile(g_pd3dDevice.Get(), "./crate.dds");
+	cubeShaderMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./crate.dds");
 
 	// Create sampler state
-	cubeShaderMaterials.CreateDefaultSampler(g_pd3dDevice.Get());
+	cubeShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Create grid
 	DrawGrid();
 
 	// Create grid constant and vertex buffers
-	gridShaderController.CreateVSConstantBuffer(g_pd3dDevice.Get(), sizeof(GridConstantBuffer));
-	gridBufferController.CreateVertexBuffer(g_pd3dDevice.Get(), gridlines);
+	gridShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(GridConstantBuffer));
+	gridBufferController.CreateVertexBuffer(gpD3D_Device.Get(), gridlines);
 	gridBufferController.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
 
 	// Create grid layout
@@ -491,8 +492,8 @@ HRESULT Init3DContent()
 		{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
-	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
-	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "GRID_PS.cso");
+	hr = gridShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
+	hr = gridShaderController.CreatePSFromFile(gpD3D_Device.Get(), "GRID_PS.cso");
 
 	// Create puppy input layout
 	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
@@ -501,7 +502,7 @@ HRESULT Init3DContent()
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
-	UINT puppyElements = ARRAYSIZE(puppyLayout);
+	
 	// g_pd3dDevice.Get()->CreateInputLayout(puppyLayout, puppyElements, )
 
 	// Create puppy vertex buffer
@@ -563,10 +564,10 @@ void Render()
 	};
 
 	// Clear the back buffer 
-	g_pImmediateContext->ClearRenderTargetView(g_pRenderTargetView.Get(), Colors::MidnightBlue);
+	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::MidnightBlue);
 
 	// Clear the depth buffer to max depth (1.0f)
-	g_pImmediateContext->ClearDepthStencilView(g_pDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Stage 2: Get user input and apply motion
 	float moveScale = 0.025f;
@@ -655,11 +656,11 @@ void Render()
 	cb.vOutputColor = g_vOutputColor;
 
 	// Render instanced cubes
-	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
-	cubeShaderController.Bind(g_pImmediateContext.Get());
-	cubeBufferController.Bind(g_pImmediateContext.Get());
-	g_pImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	cubeShaderMaterials.Bind(gpImmediateContext.Get());
+	cubeShaderController.Bind(gpImmediateContext.Get());
+	cubeBufferController.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
 	// Update for second cube
 	ConstantBuffer cb2;
@@ -677,38 +678,38 @@ void Render()
 	cb2.vOutputColor = g_vOutputColor;
 
 	// Render orbit cube
-	g_pImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
-	cubeShaderMaterials.Bind(g_pImmediateContext.Get());
-	cubeShaderController.Bind(g_pImmediateContext.Get());
-	cubeBufferController.Bind(g_pImmediateContext.Get());
-	g_pImmediateContext->DrawIndexed(36, 0, 0);
+	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	cubeShaderMaterials.Bind(gpImmediateContext.Get());
+	cubeShaderController.Bind(gpImmediateContext.Get());
+	cubeBufferController.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
 	gridCB.gridView = (g_View);
 	gridCB.gridProjection = (g_Projection);
-	g_pImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridCB, 0, 0);
-	gridShaderController.Bind(g_pImmediateContext.Get());
-	gridBufferController.BindAndDraw(g_pImmediateContext.Get());
+	gpImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridCB, 0, 0);
+	gridShaderController.Bind(gpImmediateContext.Get());
+	gridBufferController.BindAndDraw(gpImmediateContext.Get());
 
 	// Present back buffer information to the front buffer (user viewpoint)
-	g_pSwapChain->Present(0, 0);
+	gpSwapChain->Present(0, 0);
 };
 
 void CleanupDevice()
 {
-	if (g_pImmediateContext) g_pImmediateContext->ClearState();
-	if (g_pDepthStencil) g_pDepthStencil->Release();
-	if (g_pDepthStencilView) g_pDepthStencilView->Release();
-	if (g_pTextureRV) g_pTextureRV->Release();
-	if (g_pSamplerLinear) g_pSamplerLinear->Release();
-	if (g_pRenderTargetView) g_pRenderTargetView->Release();
-	if (g_pSwapChain1) g_pSwapChain1->Release();
-	if (g_pSwapChain) g_pSwapChain->Release();
-	if (g_pImmediateContext1) g_pImmediateContext1->Release();
-	if (g_pImmediateContext) g_pImmediateContext->Release();
-	if (g_pd3dDevice1) g_pd3dDevice1->Release();
-	if (g_pd3dDevice) g_pd3dDevice->Release();
+	if (gpImmediateContext) gpImmediateContext->ClearState();
+	if (gpDepthStencil) gpDepthStencil->Release();
+	if (gpDepthStencilView) gpDepthStencilView->Release();
+	if (gpTextureRV) gpTextureRV->Release();
+	if (gpSamplerLinear) gpSamplerLinear->Release();
+	if (gpRenderTargetView) gpRenderTargetView->Release();
+	if (gpSwapChain1) gpSwapChain1->Release();
+	if (gpSwapChain) gpSwapChain->Release();
+	if (gpImmediateContext1) gpImmediateContext1->Release();
+	if (gpImmediateContext) gpImmediateContext->Release();
+	if (gpD3D_Device1) gpD3D_Device1->Release();
+	if (gpD3D_Device) gpD3D_Device->Release();
 }
 #pragma endregion
