@@ -9,4 +9,4 @@ Documentation
 *.db
 *.opensdf
 *.user
-.vs
+*.vs

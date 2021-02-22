@@ -6,6 +6,7 @@
 #include "RenderTools.h"
 #include "MeshTools.h"
 #include "Grid.h"
+#include "Puppy.h"
 
 using namespace DirectX;
 using namespace std;
@@ -74,6 +75,11 @@ BufferController<SimpleVertex> cubeBufferController;
 ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
+
+// Puppy
+BufferController<SimpleVertex> puppyBuffer;
+ShaderController puppyShader;
+ShaderMaterials puppyMaterials;
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -417,6 +423,20 @@ HRESULT Init3DContent()
 
 	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
 	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "GRID_PS.cso");
+
+	// Create puppy input layout
+	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	};
+	UINT puppyElements = ARRAYSIZE(puppyLayout);
+	// g_pd3dDevice.Get()->CreateInputLayout(puppyLayout, puppyElements, )
+
+	// Create puppy vertex buffer
+	
+
 
 	return S_OK;
 }
