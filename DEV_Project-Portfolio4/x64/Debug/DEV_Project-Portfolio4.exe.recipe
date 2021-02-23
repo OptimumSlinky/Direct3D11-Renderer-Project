@@ -2,24 +2,27 @@
 <Project>
   <ProjectOutputs>
     <ProjectOutput>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe</FullPath>
     </ProjectOutput>
   </ProjectOutputs>
   <ContentFiles>
     <ContentFile>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\MAIN_PS.cso</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\MAIN_PS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\MAIN_VS.cso</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\MAIN_VS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\GRID_PS.cso</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\GRID_PS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\GRID_VS.cso</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\GRID_VS.cso</FullPath>
     </ContentFile>
     <ContentFile>
-      <FullPath>C:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\SOLID_PS.cso</FullPath>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\PUPPY_VS.cso</FullPath>
+    </ContentFile>
+    <ContentFile>
+      <FullPath>S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\SOLID_PS.cso</FullPath>
     </ContentFile>
   </ContentFiles>
   <SatelliteDlls />

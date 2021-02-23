@@ -6,7 +6,7 @@
 #include "RenderTools.h"
 #include "MeshTools.h"
 #include "Grid.h"
-#include "Puppy.h"
+#include "Doggo_fixed.h"
 
 using namespace DirectX;
 using namespace std;
@@ -18,7 +18,6 @@ LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
 LONG g_WindowWidth = 1280;
 LONG g_WindowHeight = 720;
 const BOOL g_EnableVSync = TRUE;
-POINT mousePOS;
 const UINT boxCount = 3;
 
 struct ConstantBuffer
@@ -65,6 +64,7 @@ ComPtr<ID3D11Buffer> gpuPuppyVertBuffer = nullptr;
 XMMATRIX				g_Camera;
 XMMATRIX                g_World[boxCount];
 XMMATRIX                g_World2;
+XMMATRIX                g_World3;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -169,41 +169,6 @@ HRESULT InitWindow(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(g_hWnd, nCmdShow);
 	UpdateWindow(g_hWnd);
-
-	return S_OK;
-}
-
-// Legacy helper for compiling shaders with D3DCompile
-// From MSDN tutorials
-HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
-{
-	HRESULT hr = S_OK;
-
-	DWORD dwShaderFlags = D3DCOMPILE_ENABLE_STRICTNESS;
-#ifdef _DEBUG
-	// Set the D3DCOMPILE_DEBUG flag to embed debug information in the shaders.
-	// Setting this flag improves the shader debugging experience, but still allows 
-	// the shaders to be optimized and to run exactly the way they will run in 
-	// the release configuration of this program.
-	dwShaderFlags |= D3DCOMPILE_DEBUG;
-
-	// Disable optimizations to further improve shader debugging
-	dwShaderFlags |= D3DCOMPILE_SKIP_OPTIMIZATION;
-#endif
-
-	ID3DBlob* pErrorBlob = nullptr;
-	hr = D3DCompileFromFile(szFileName, nullptr, nullptr, szEntryPoint, szShaderModel,
-		dwShaderFlags, 0, ppBlobOut, &pErrorBlob);
-	if (FAILED(hr))
-	{
-		if (pErrorBlob)
-		{
-			OutputDebugStringA(reinterpret_cast<const char*>(pErrorBlob->GetBufferPointer()));
-			pErrorBlob->Release();
-		}
-		return hr;
-	}
-	if (pErrorBlob) pErrorBlob->Release();
 
 	return S_OK;
 }
@@ -417,9 +382,8 @@ HRESULT Init3DContent()
 	D3D11_INPUT_ELEMENT_DESC cubeLayout[] =
 	{
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		// { "INSTANCE", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 	};
 
 	// Create vertex shader and input layout from file
@@ -431,7 +395,7 @@ HRESULT Init3DContent()
 	// Create 3D cube
 	SimpleMesh<SimpleVertex> newCube = CreateCube();
 
-	// Create vertex buffers
+	// Create vertex + index buffers
 	cubeBufferController.CreateBuffers(g_pd3dDevice.Get(), newCube.indicesList, newCube.vertexList);
 
 	// Create constant buffer
@@ -462,28 +426,69 @@ HRESULT Init3DContent()
 	hr = gridShaderController.CreateVSandILFromFile(g_pd3dDevice.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
 	hr = gridShaderController.CreatePSFromFile(g_pd3dDevice.Get(), "GRID_PS.cso");
 
-	// Create puppy input layout
-	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
+	// For Loop to convert OBJ -> Vector?
+	// create new vectors for doggo
+	vector <SimpleVertex> puppyVerts;
+	vector <int> puppyIndices;
+	
+	for (size_t i = 0; i < 5250; i++)
 	{
-		// This needs to match OBJ_VERT -> 
-		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	};
-	hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
+		// create temp simplevertex
+		SimpleVertex temp;
+
+		// store the data from objvert to simplevertex
+		temp.position.x = Doggo_fixed_data[i].pos[0];
+		temp.position.y = Doggo_fixed_data[i].pos[1];
+		temp.position.z = Doggo_fixed_data[i].pos[2];
+
+		temp.texture.x= Doggo_fixed_data[i].uvw[0];
+		temp.texture.y = Doggo_fixed_data[i].uvw[1];
+
+		temp.normal.x = Doggo_fixed_data[i].nrm[0];
+		temp.normal.y = Doggo_fixed_data[i].nrm[1];
+		temp.normal.z = Doggo_fixed_data[i].nrm[2];
+
+		//push into vector
+		puppyVerts.push_back(temp);
+	}
+
+	for (size_t i = 0; i < 24714; i++)
+	{
+		int temp = Doggo_fixed_indicies[i];
+		puppyIndices.push_back(temp);
+	}
+
+	// Create puppy input layout
+	//D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
+	//{
+	//	// This needs to match OBJ_VERT -> 
+	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+	//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	
+	//};
+	//hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "PUPPY_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
+
+	hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
 
 	// Create puppy pixel shader
 	hr = puppyShader.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
 
-	// Create puppy vertex buffer
-	hr = puppyBuffer.CreateBuffers(g_pd3dDevice.Get(), Puppy_indicies, Puppy_data); // Make variant that takes arrays for puppy data
+	// Create puppy vertex + index buffer
+	hr = puppyBuffer.CreateBuffers(g_pd3dDevice.Get(), puppyIndices, puppyVerts); // Make variant that takes arrays for puppy data
 
+	// Constant buffer
+	puppyShader.CreateVSConstantBuffer(g_pd3dDevice.Get(), sizeof(ConstantBuffer));
+	puppyShader.PS_ConstantBuffer = puppyShader.VS_ConstantBuffer;
 
+	// Load puppy textures
+	puppyMaterials.CreateTextureFromFile(g_pd3dDevice.Get(), "./Shiba.dds");
+
+	// Sampler state
+	puppyMaterials.CreateDefaultSampler(g_pd3dDevice.Get());
 
 	return S_OK;
 }
-
-
 
 void Render()
 {
@@ -511,6 +516,11 @@ void Render()
 	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
 	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 	g_World2 = downscale * spin * translate * orbit;
+
+	// Downscale doggo 
+	XMMATRIX downscaleDoggo = XMMatrixScaling(0.075f, 0.075f, 0.075f);
+	XMMATRIX translateDoggo = XMMatrixTranslation(4.0, -3.0f, 5.0);
+	g_World3 = downscaleDoggo * translateDoggo;
 
 	//// Setup lighting parameters
 	XMFLOAT4 vLightPositions[3] =
@@ -633,7 +643,7 @@ void Render()
 	cubeBufferController.Bind(g_pImmediateContext.Get());
 	g_pImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
-	// Update for second cube
+	// Update for orbit cube
 	ConstantBuffer cb2;
 	cb2.mWorld[0] = g_World2;
 	cb2.mView = (g_View);
@@ -654,6 +664,14 @@ void Render()
 	cubeShaderController.Bind(g_pImmediateContext.Get());
 	cubeBufferController.Bind(g_pImmediateContext.Get());
 	g_pImmediateContext->DrawIndexed(36, 0, 0);
+
+	// Render doggo
+	cb.mWorld[0] = g_World3;
+	g_pImmediateContext->UpdateSubresource(puppyShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	puppyMaterials.Bind(g_pImmediateContext.Get());
+	puppyShader.Bind(g_pImmediateContext.Get());
+	puppyBuffer.Bind(g_pImmediateContext.Get());
+	g_pImmediateContext->DrawIndexed(31914, 0, 0);
 
 	// Render gridlines
 	GridConstantBuffer gridCB;

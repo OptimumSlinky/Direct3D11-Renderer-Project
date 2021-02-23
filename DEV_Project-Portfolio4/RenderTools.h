@@ -6,6 +6,16 @@ using namespace DirectX;
 using namespace std;
 using Microsoft::WRL::ComPtr;
 
+#ifndef __OBJ_VERT__
+typedef struct _OBJ_VERT_
+{
+	float pos[3]; // Left-handed +Z forward coordinate w not provided, assumed to be 1.
+	float uvw[3]; // D3D/Vulkan style top left 0,0 coordinate.
+	float nrm[3]; // Provided direct from obj file, may or may not be normalized.
+}OBJ_VERT;
+#define __OBJ_VERT__
+#endif
+
 // Shader compile function
 HRESULT CompileShaderFromFile(const WCHAR* szFileName, LPCSTR szEntryPoint, LPCSTR szShaderModel, ID3DBlob** ppBlobOut)
 {
@@ -67,10 +77,8 @@ struct ShaderMaterials
 		sampDesc.MinLOD = 0;
 		sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
 		hr = gpu_device->CreateSamplerState(&sampDesc, SamplerState.ReleaseAndGetAddressOf());
-		if (FAILED(hr))
-		{
-			return hr;
-		}
+		return hr;
+
 	}
 
 	HRESULT CreateTextureFromFile(ID3D11Device* gpu_device, string filename)
@@ -206,6 +214,19 @@ template <typename T> struct BufferController
 		return hr;
 	}
 
+	HRESULT CreateBuffersArray(ID3D11Device* gpu_device, const int indices[], const OBJ_VERT vertices[])
+	{
+		HRESULT hr = S_OK;
+		hr = CreateIndexBufferArray(gpu_device, indices);
+		if (FAILED(hr))
+		{
+			return hr;
+		}
+
+		hr = CreateVertexBufferArray(gpu_device, vertices);
+		return hr;
+	}
+
 	HRESULT CreateIndexBuffer(ID3D11Device* gpu_device, vector<int>& indices)
 	{
 		indexCount = (int)indices.size();
@@ -223,6 +244,23 @@ template <typename T> struct BufferController
 		return hr;
 	}
 
+	HRESULT CreateIndexBufferArray(ID3D11Device* gpu_device, const int indices[])
+	{
+		indexCount = sizeof(indices) / sizeof(indices[0]);
+		HRESULT hr = S_OK;
+		D3D11_BUFFER_DESC bd = {};
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = sizeof(int) * indexCount;
+		bd.BindFlags = D3D11_BIND_INDEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA InitData = {};
+		InitData.pSysMem = indices;
+		hr = gpu_device->CreateBuffer(&bd, &InitData,
+			IndexBuffer.GetAddressOf());
+		return hr;
+	}
+
 	HRESULT CreateVertexBuffer(ID3D11Device* gpu_device, vector<T>& vertices)
 	{
 		vertexCount = (int)vertices.size();
@@ -235,6 +273,23 @@ template <typename T> struct BufferController
 
 		D3D11_SUBRESOURCE_DATA InitData = {};
 		InitData.pSysMem = vertices.data();
+		hr = gpu_device->CreateBuffer(&bd, &InitData,
+			VertexBuffer.ReleaseAndGetAddressOf());
+		return hr;
+	}
+
+	HRESULT CreateVertexBufferArray(ID3D11Device* gpu_device, const OBJ_VERT vertices[])
+	{
+		vertexCount = sizeof(vertices) / sizeof(vertices[0]);
+		HRESULT hr = S_OK;
+		D3D11_BUFFER_DESC bd = {};
+		bd.Usage = D3D11_USAGE_DEFAULT;
+		bd.ByteWidth = sizeof(T) * vertexCount;
+		bd.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+		bd.CPUAccessFlags = 0;
+
+		D3D11_SUBRESOURCE_DATA InitData = {};
+		InitData.pSysMem = vertices;
 		hr = gpu_device->CreateBuffer(&bd, &InitData,
 			VertexBuffer.ReleaseAndGetAddressOf());
 		return hr;

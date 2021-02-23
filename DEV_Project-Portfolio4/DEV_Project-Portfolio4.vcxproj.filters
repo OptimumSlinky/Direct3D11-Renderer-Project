@@ -42,7 +42,7 @@
     <ClInclude Include="MeshTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Puppy.h">
+    <ClInclude Include="Doggo_fixed.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -81,6 +81,9 @@
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="MAIN_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="PUPPY_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
