@@ -8,6 +8,9 @@
 #include "MeshTools.h"
 #include "Grid.h"
 #include "Puppy.h"
+#define GATEWARE_ENABLE_CORE
+#define GATEWARE_ENABLE_INPUT
+#include "Gateware.h"
 
 using namespace DirectX;
 using namespace std;
@@ -21,6 +24,7 @@ LONG g_WindowHeight = 720;
 const BOOL g_EnableVSync = TRUE;
 POINT mousePOS;
 const UINT boxCount = 3;
+GW::INPUT::GInput MouseLook;
 
 struct ConstantBuffer
 {
@@ -242,6 +246,8 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 HRESULT InitDevice()
 {
 	HRESULT hr = S_OK;
+	GW::GReturn gr;
+	gr = MouseLook.Create(GW::SYSTEM::UNIVERSAL_WINDOW_HANDLE{ g_hWnd, nullptr });
 
 	RECT rc;
 	GetClientRect(g_hWnd, &rc);
@@ -647,9 +653,19 @@ void Render()
 		g_Camera = XMMatrixMultiply(temp, g_Camera);
 	}
 
-	if (GetCursorPos)
+	float deltaX;
+	float deltaY;
+	GW::GReturn result;
+	result = MouseLook.GetMouseDelta(deltaX, deltaY);
+	if (G_PASS(result) && result != GW::GReturn::REDUNDANT)
 	{
-		
+		XMMATRIX temp = XMMatrixRotationX(deltaX);
+		g_Camera = XMMatrixMultiply(temp, g_Camera); // X rotation complete; go do global Y
+
+		// Do global Y here
+				//XMMATRIX tempY = XMMatrixRotationY(deltaY);
+
+		// Return
 	}
 
 	// Stage 3: Convert updated camera back to View Space
