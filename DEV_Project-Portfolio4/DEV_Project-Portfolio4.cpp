@@ -653,19 +653,28 @@ void Render()
 		g_Camera = XMMatrixMultiply(temp, g_Camera);
 	}
 
+	// Mouse Look Implementation
+	// Floats for storing movement deltas
 	float deltaX;
 	float deltaY;
+	float mouseScale = 0.0025f; 
+
+	//Gateware black magic
 	GW::GReturn result;
-	result = MouseLook.GetMouseDelta(deltaX, deltaY);
+	result = MouseLook.GetMouseDelta(deltaY, deltaX);
+
 	if (G_PASS(result) && result != GW::GReturn::REDUNDANT)
 	{
-		XMMATRIX temp = XMMatrixRotationX(deltaX);
-		g_Camera = XMMatrixMultiply(temp, g_Camera); // X rotation complete; go do global Y
+		XMMATRIX tempX = XMMatrixRotationX(deltaX * mouseScale);
+		g_Camera = XMMatrixMultiply(tempX, g_Camera); // X rotation complete; go do global Y
 
 		// Do global Y here
-				//XMMATRIX tempY = XMMatrixRotationY(deltaY);
-
-		// Return
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX tempY = XMMatrixRotationY(deltaY * mouseScale); // Rotate
+		g_Camera = XMMatrixMultiply(tempY, g_Camera); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
 	}
 
 	// Stage 3: Convert updated camera back to View Space
