@@ -1,12 +1,5 @@
 // Constant buffer
 
-struct LightObj
-{
-    float4 position;
-    float4 color;
-    float4 direction;
-};
-
 cbuffer ConstantBuffer : register(b0)
 {
     matrix world[3];
@@ -24,38 +17,11 @@ SamplerState linearSampler : register(s0);
 struct PS_Input
 {
     float4 positionL : SV_POSITION;
-    // float3 color : COLOR;
-    float3 normal : NORMAL;
     float2 tex : TEXCOORD0;
+    float3 normal : NORMAL;
     float3 positionW : WORLDPOSITION;
 
 };
-
-// TODO: Create Light Functions
-float4 DrawAmbientLight(float4 textureColor, float intensity)
-{
-    float4 finalOutput = textureColor * intensity;
-    return finalOutput;
-};
-
-float4 DrawDirectionLight(LightObj light, PS_Input pixelInput, float4 textureColor)
-{
-    float directionRatio = saturate(dot(-light.direction.xyz, pixelInput.normal));
-    float4 finalOutput = directionRatio * light.color * textureColor;
-    finalOutput.a = 1;
-    return finalOutput;
-};
-
-float4 DrawPointLight(LightObj light, PS_Input pixelInput, float4 textureColor)
-{
-    float3 pointDirection = normalize(light.position.xyz - pixelInput.positionW); // LightDir = normalize(LightPos - SurfacePos)
-    float pointRatio = saturate(dot((float3) pointDirection, pixelInput.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal)
-    float4 finalOutput = pointRatio * light.color * textureColor; // Result = LightRatio * LightColor * SurfaceColor
-    finalOutput.a = 1;
-    return finalOutput;
-};
-
-
 
 // Pixel Shader 
 float4 PS_Main(PS_Input input) : SV_Target
@@ -65,16 +31,7 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     // Get Texture Color
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
-    
-    // Set Ambient Light
-    //float4 ambientLight = DrawAmbientLight(textureColor, 0.35f);
-    
-    // Set Directional Light
-    //float4 directionalLight = DrawDirectionLight(vLightDirection[0], input, textureColor);
-    
-    // Set Point Light
-    //float4 pointLight = DrawPointLight(vLightPosition[0], input, textureColor);
-    
+            
     // Create outputs for different light implementations
     float4 directionalLight = 0;
     float4 pointLight = 0;
@@ -106,3 +63,28 @@ float4 PS_Main(PS_Input input) : SV_Target
     // Send it
     return saturate(ambientLight + directionalLight + pointLight);
 }
+
+
+//// TODO: Create Light Functions
+//float4 DrawAmbientLight(float4 textureColor, float intensity)
+//{
+//    float4 finalOutput = textureColor * intensity;
+//    return finalOutput;
+//};
+//
+//float4 DrawDirectionLight(LightObj light, PS_Input pixelInput, float4 textureColor)
+//{
+//    float directionRatio = saturate(dot(-light.direction.xyz, pixelInput.normal));
+//    float4 finalOutput = directionRatio * light.color * textureColor;
+//    finalOutput.a = 1;
+//    return finalOutput;
+//};
+//
+//float4 DrawPointLight(LightObj light, PS_Input pixelInput, float4 textureColor)
+//{
+//    float3 pointDirection = normalize(light.position.xyz - pixelInput.positionW); // LightDir = normalize(LightPos - SurfacePos)
+//    float pointRatio = saturate(dot((float3) pointDirection, pixelInput.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal)
+//    float4 finalOutput = pointRatio * light.color * textureColor; // Result = LightRatio * LightColor * SurfaceColor
+//    finalOutput.a = 1;
+//    return finalOutput;
+//};
