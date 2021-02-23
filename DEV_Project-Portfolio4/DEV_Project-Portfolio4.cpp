@@ -465,18 +465,18 @@ HRESULT Init3DContent()
 	// Create puppy input layout
 	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
 	{
+		// This needs to match OBJ_VERT -> 
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 	};
-	UINT puppyElements = ARRAYSIZE(puppyLayout);
 	hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "MAIN_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
 
 	// Create puppy pixel shader
 	hr = puppyShader.CreatePSFromFile(g_pd3dDevice.Get(), "MAIN_PS.cso");
 
 	// Create puppy vertex buffer
-	hr = puppyBuffer.CreateBuffers(g_pd3dDevice.Get(), &Puppy_indicies, &Puppy_data);
+	hr = puppyBuffer.CreateBuffers(g_pd3dDevice.Get(), Puppy_indicies, Puppy_data); // Make variant that takes arrays for puppy data
 
 
 
