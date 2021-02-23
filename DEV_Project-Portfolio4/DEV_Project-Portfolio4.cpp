@@ -22,7 +22,6 @@ LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
 LONG g_WindowWidth = 1280;
 LONG g_WindowHeight = 720;
 const BOOL g_EnableVSync = TRUE;
-POINT mousePOS;
 const UINT boxCount = 3;
 GW::INPUT::GInput MouseLook;
 
