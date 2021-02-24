@@ -1,0 +1,14 @@
+build/
+Release
+Debug
+x64
+.vs
+*.ipch
+Documentation
+*.suo
+*.sdf
+*.db
+*.opensdf
+*.user
+*.vs
+*.cso
