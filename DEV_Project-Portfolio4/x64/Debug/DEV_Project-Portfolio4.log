@@ -1,3 +1,0 @@
-﻿  DEV_Project-Portfolio4.cpp
-S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\RenderTools.h(97): warning C4715: 'ShaderMaterials::CreateTextureFromFile': not all control paths return a value
-  DEV_Project-Portfolio4.vcxproj -> S:\Full Sail\Project-Portfolio4\DEV_Project-Portfolio4\x64\Debug\DEV_Project-Portfolio4.exe
