@@ -432,7 +432,7 @@ HRESULT InitDevice()
 	g_World2 = XMMatrixIdentity();
 
 	// Initialize view matrix
-	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, -3.0f, 0.0f);
+	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, 7.0f, 0.0f);
 	XMVECTOR At = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	XMVECTOR Up = XMVectorSet(0.0f, 1.0f, 0.0f, 0.0f);
 	g_View = XMMatrixLookAtLH(Eye, At, Up);
@@ -532,24 +532,24 @@ HRESULT Init3DContent()
 		puppyIndices.push_back(temp);
 	}
 
-	// Create puppy input layout
-	//D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
-	//{
-	//	// This needs to match OBJ_VERT -> 
-	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	{ "TEXCOORD", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
-	//	{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-	//	
-	//};
-	//hr = puppyShader.CreateVSandILFromFile(g_pd3dDevice.Get(), "PUPPY_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
+	 // Create doggo input layout
+	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
+	{
+		
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		
+	};
+	hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "PUPPY_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
 
-	hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
+	// hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "PUPPY_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
 
 	// Create puppy pixel shader
 	hr = puppyShader.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create puppy vertex + index buffer
-	hr = puppyBuffer.CreateBuffers(gpD3D_Device.Get(), puppyIndices, puppyVerts); // Make variant that takes arrays for puppy data
+	hr = puppyBuffer.CreateBuffers(gpD3D_Device.Get(), puppyIndices, puppyVerts); 
 
 	// Constant buffer
 	puppyShader.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
@@ -593,31 +593,31 @@ void Render()
 	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 	g_World2 = downscale * spin * translate * orbit;
 
-	// Downscale doggo 
+	// Place and downsize doggo 
 	XMMATRIX downscaleDoggo = XMMatrixScaling(0.075f, 0.075f, 0.075f);
-	XMMATRIX translateDoggo = XMMatrixTranslation(4.0, -3.0f, 5.0);
+	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
 	g_World3 = downscaleDoggo * translateDoggo;
 
 	//// Setup lighting parameters
 	XMFLOAT4 vLightPositions[3] =
 	{
-		XMFLOAT4(3.5f, 1.5f, 0.0f, 1.0f),
-		XMFLOAT4(-3.5f, 3.0f, 0.0f, 1.0f),
-		XMFLOAT4(-3.5f, 3.0f, 0.0f, 1.0f),
+		XMFLOAT4(-4.0f, 1.5f, 0.0f, 1.0f), // point light position
+		XMFLOAT4(0.0f, -3.0f, 6.0f, 1.0f), // spotlight
+		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
 	};
 
 	XMFLOAT4 vLightDirections[3] =
 	{
-		XMFLOAT4(4.0f, 0.0f, 0.0f, 1.0f),
 		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
-		XMFLOAT4(0.0f, 0.0f, -1.0f, 1.0f),
+		XMFLOAT4(0.0f, 5.0f, 0.0f, 1.0f), // spotlight
+		XMFLOAT4(4.0f, 0.0f, 0.0f, 1.0f), // directional light
 	};
 
 	XMFLOAT4 vLightColors[3] =
 	{
-		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), // r
-		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), // g
-		XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), // b
+		XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f), // r -> point light
+		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), // g -> spotlight
+		XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), // b -> directional light
 	};
 
 	// Clear the back buffer 
@@ -658,7 +658,7 @@ void Render()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationY(-t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationZ(-t * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
@@ -668,7 +668,7 @@ void Render()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationY(t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationZ(t * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
