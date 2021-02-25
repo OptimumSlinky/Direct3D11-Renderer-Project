@@ -725,7 +725,7 @@ void Render()
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
 		XMMATRIX tempY = XMMatrixRotationY(deltaY * mouseScale); // Rotate
-		g_Camera = XMMatrixMultiply(tempY, g_Camera); // Multiply matrices in reverse order
+		g_Camera = XMMatrixMultiply(g_Camera, tempY); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
 
