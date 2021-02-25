@@ -20,7 +20,6 @@ struct VS_Input
     float3 positionL : POSITION; // Position in local space
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
-    
 };
 
 struct VS_Output
