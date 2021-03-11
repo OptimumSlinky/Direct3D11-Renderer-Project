@@ -43,6 +43,12 @@ struct GridConstantBuffer
 	XMMATRIX gridProjection;
 };
 
+// Crate 
+SimpleMesh<SimpleVertex> crateMesh;
+
+// Ground 
+SimpleMesh <SimpleVertex> groundMesh;
+
 // Direct3D global variables
 HINSTANCE               g_hInst = nullptr;
 HWND                    g_hWnd = nullptr;
@@ -68,6 +74,7 @@ XMMATRIX				g_Camera;
 XMMATRIX                g_World[boxCount];
 XMMATRIX                g_World2;
 XMMATRIX                g_World3;
+XMMATRIX                g_World4;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -81,6 +88,11 @@ BufferController<SimpleVertex> cubeBufferController;
 ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
+
+// Ground
+ShaderMaterials groundShaderMaterials;
+ShaderController groundShaderController;
+BufferController<SimpleVertex> groundBufferController;
 
 // Puppy
 BufferController<SimpleVertex> puppyBuffer;
@@ -467,7 +479,7 @@ HRESULT Init3DContent()
 	hr = cubeShaderController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create 3D cube
-	SimpleMesh<SimpleVertex> crate = CreateCube();
+	SimpleMesh<SimpleVertex> crate = CreateCube(crateMesh);
 
 	// Create vertex buffers
 	cubeBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indicesList, crate.vertexList);
@@ -500,11 +512,40 @@ HRESULT Init3DContent()
 	hr = gridShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "GRID_VS.cso", gridLayout, ARRAYSIZE(gridLayout));
 	hr = gridShaderController.CreatePSFromFile(gpD3D_Device.Get(), "GRID_PS.cso");
 
-	// For Loop to convert OBJ -> Vector?
+	// Create ground layout
+	D3D11_INPUT_ELEMENT_DESC groundLayout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	// Create ground
+	SimpleMesh<SimpleVertex> ground = MakeTerrain(groundMesh);
+
+	// Create ground vertex shader and input layout from file
+	hr = groundShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", groundLayout, ARRAYSIZE(groundLayout));
+
+	// Create ground pixel shader from file
+	hr = groundShaderController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
+
+	// Create ground vertex buffers
+	groundBufferController.CreateBuffers(gpD3D_Device.Get(), ground.indicesList, ground.vertexList);
+
+	// Create ground constant buffer
+	groundShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
+	groundShaderController.PS_ConstantBuffer = groundShaderController.VS_ConstantBuffer;
+
+	// Load ground texture 
+	groundShaderMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./ground.dds");
+
+	// Create ground sampler state
+	groundShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
+
 	// create new vectors for doggo
 	vector <SimpleVertex> puppyVerts;
 	vector <int> puppyIndices;
-	
+
 	for (size_t i = 0; i < 5250; i++)
 	{
 		// create temp simplevertex
@@ -515,7 +556,7 @@ HRESULT Init3DContent()
 		temp.position.y = Doggo_fixed_data[i].pos[1];
 		temp.position.z = Doggo_fixed_data[i].pos[2];
 
-		temp.texture.x= Doggo_fixed_data[i].uvw[0];
+		temp.texture.x = Doggo_fixed_data[i].uvw[0];
 		temp.texture.y = Doggo_fixed_data[i].uvw[1];
 
 		temp.normal.x = Doggo_fixed_data[i].nrm[0];
@@ -532,14 +573,14 @@ HRESULT Init3DContent()
 		puppyIndices.push_back(temp);
 	}
 
-	 // Create doggo input layout
+	// Create doggo input layout
 	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
 	{
-		
+
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
-		
+
 	};
 	hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "PUPPY_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
 
@@ -549,7 +590,7 @@ HRESULT Init3DContent()
 	hr = puppyShader.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create puppy vertex + index buffer
-	hr = puppyBuffer.CreateBuffers(gpD3D_Device.Get(), puppyIndices, puppyVerts); 
+	hr = puppyBuffer.CreateBuffers(gpD3D_Device.Get(), puppyIndices, puppyVerts);
 
 	// Constant buffer
 	puppyShader.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
@@ -709,7 +750,7 @@ void Render()
 	// Floats for storing movement deltas
 	float deltaX;
 	float deltaY;
-	float mouseScale = 0.0025f; 
+	float mouseScale = 0.0025f;
 
 	//Gateware black magic
 	GW::GReturn result;
@@ -737,8 +778,8 @@ void Render()
 	cb.mWorld[0] = g_World[0];
 	cb.mWorld[1] = g_World[1];
 	cb.mWorld[2] = g_World[2];
-	cb.mView = (g_View);
-	cb.mProjection = (g_Projection);
+	cb.mView = g_View;
+	cb.mProjection = g_Projection;
 
 	// Position and rotate instanced cubes
 	XMMATRIX instanceSpin = XMMatrixRotationY(t);
@@ -766,8 +807,8 @@ void Render()
 	// Update for orbit cube
 	ConstantBuffer cb2;
 	cb2.mWorld[0] = g_World2;
-	cb2.mView = (g_View);
-	cb2.mProjection = (g_Projection);
+	cb2.mView = g_View;
+	cb2.mProjection = g_Projection;
 
 	cb2.vLightPosition[0] = vLightPositions[0];
 	cb2.vLightPosition[1] = vLightPositions[1];
@@ -793,14 +834,22 @@ void Render()
 	puppyBuffer.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(31914, 0, 0);
 
+	// Render ground
+	cb.mWorld[0] = g_World4;
+	gpImmediateContext->UpdateSubresource(groundShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	groundShaderMaterials.Bind(gpImmediateContext.Get());
+	groundShaderController.Bind(gpImmediateContext.Get());
+	groundBufferController.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexed(6, 0, 0);
+
 	// Render gridlines
-	GridConstantBuffer gridCB;
+	/*GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
 	gridCB.gridView = (g_View);
 	gridCB.gridProjection = (g_Projection);
 	gpImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridCB, 0, 0);
 	gridShaderController.Bind(gpImmediateContext.Get());
-	gridBufferController.BindAndDraw(gpImmediateContext.Get());
+	gridBufferController.BindAndDraw(gpImmediateContext.Get());*/
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	gpSwapChain->Present(0, 0);

@@ -18,10 +18,8 @@ template <typename T> struct SimpleMesh
 	vector<int> indicesList;
 };
 
-SimpleMesh<SimpleVertex> CreateCube()
+SimpleMesh<SimpleVertex> CreateCube(SimpleMesh<SimpleVertex>& mesh)
 {
-	SimpleMesh<SimpleVertex> mesh;
-
 	// Cube vertices
 	mesh.vertexList =
 	{
@@ -38,10 +36,10 @@ SimpleMesh<SimpleVertex> CreateCube()
 		{ XMFLOAT3(-1.0f, -1.0f, 1.0f),	 XMFLOAT2(0.0f, 0.0f),	XMFLOAT3(0.0f, -1.0f, 0.0f) },
 
 		// Left Face
-		{ XMFLOAT3(-1.0f, -1.0f, 1.0f),		 XMFLOAT2(0.0f, 1.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f)		},
-		{ XMFLOAT3(-1.0f, -1.0f, -1.0f),	 XMFLOAT2(1.0f, 1.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f)		},
-		{ XMFLOAT3(-1.0f, 1.0f, -1.0f),		 XMFLOAT2(1.0f, 0.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f)		},
-		{ XMFLOAT3(-1.0f, 1.0f, 1.0f),		 XMFLOAT2(0.0f, 0.0f),XMFLOAT3(-1.0f, 0.0f, 0.0f)		},
+		{ XMFLOAT3(-1.0f, -1.0f, 1.0f),	XMFLOAT2(0.0f, 1.0f),	XMFLOAT3(-1.0f, 0.0f, 0.0f)},
+		{ XMFLOAT3(-1.0f, -1.0f, -1.0f),XMFLOAT2(1.0f, 1.0f),	XMFLOAT3(-1.0f, 0.0f, 0.0f)},
+		{ XMFLOAT3(-1.0f, 1.0f, -1.0f),	XMFLOAT2(1.0f, 0.0f),	XMFLOAT3(-1.0f, 0.0f, 0.0f)},
+		{ XMFLOAT3(-1.0f, 1.0f, 1.0f), XMFLOAT2(0.0f, 0.0f),	XMFLOAT3(-1.0f, 0.0f, 0.0f)	},
 
 		// Right Face											
 		{ XMFLOAT3(1.0f, -1.0f, 1.0f),		XMFLOAT2(1.0f, 1.0f),XMFLOAT3(1.0f, 0.0f, 0.0f)	},
@@ -85,4 +83,28 @@ SimpleMesh<SimpleVertex> CreateCube()
 	};
 
 	return mesh;
-}
+};
+
+SimpleMesh<SimpleVertex> MakeTerrain(SimpleMesh<SimpleVertex>& groundMesh)
+{
+	// Create ground
+	float scale = 15.0f;
+
+	// Create ground vertices
+	groundMesh.vertexList =
+	{
+		{ XMFLOAT3(-scale, 0.0f, -scale), XMFLOAT2(-3.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),  },
+		{ XMFLOAT3(scale, 0.0f, -scale), XMFLOAT2(0.0f, 0.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),  },
+		{ XMFLOAT3(scale, 0.0f, scale),XMFLOAT2(0.0f, 3.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),  },
+		{ XMFLOAT3(-scale, 0.0f, scale),XMFLOAT2(-3.0f, 3.0f), XMFLOAT3(0.0f, 1.0f, 0.0f),   },
+	};
+
+	// Create ground indices
+	groundMesh.indicesList =
+	{
+		3,1,0,
+		2,1,3
+	};
+
+	return groundMesh;
+};

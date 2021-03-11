@@ -74,28 +74,3 @@ float4 PS_Main(PS_Input input) : SV_Target
     // Send it
     return saturate(ambientLight + directionalLight + pointLight + spotLight);
 }
-
-
-//// TODO: Create Light Functions
-//float4 DrawAmbientLight(float4 textureColor, float intensity)
-//{
-//    float4 finalOutput = textureColor * intensity;
-//    return finalOutput;
-//};
-//
-//float4 DrawDirectionLight(LightObj light, PS_Input pixelInput, float4 textureColor)
-//{
-//    float directionRatio = saturate(dot(-light.direction.xyz, pixelInput.normal));
-//    float4 finalOutput = directionRatio * light.color * textureColor;
-//    finalOutput.a = 1;
-//    return finalOutput;
-//};
-//
-//float4 DrawPointLight(LightObj light, PS_Input pixelInput, float4 textureColor)
-//{
-//    float3 pointDirection = normalize(light.position.xyz - pixelInput.positionW); // LightDir = normalize(LightPos - SurfacePos)
-//    float pointRatio = saturate(dot((float3) pointDirection, pixelInput.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal)
-//    float4 finalOutput = pointRatio * light.color * textureColor; // Result = LightRatio * LightColor * SurfaceColor
-//    finalOutput.a = 1;
-//    return finalOutput;
-//};

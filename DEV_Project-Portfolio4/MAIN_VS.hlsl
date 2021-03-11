@@ -28,7 +28,6 @@ struct VS_Output
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 positionW : WORLDPOSITION;
-    // uint instance;
 };
 
 // Vertex shader
