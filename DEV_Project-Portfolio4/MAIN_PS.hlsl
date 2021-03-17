@@ -31,7 +31,8 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     // Get Texture Color
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
-            
+    return textureColor;
+
     // Create outputs for different light implementations
     float4 directionalLight = 0;
     float4 pointLight = 0;

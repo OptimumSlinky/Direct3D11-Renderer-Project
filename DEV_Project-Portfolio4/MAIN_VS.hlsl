@@ -25,7 +25,7 @@ struct VS_Input
 struct VS_Output
 {
     float4 positionH : SV_POSITION; // Position in projection space
-    float2 tex : TEXCOORD0;
+    float3 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 positionW : WORLDPOSITION;
 };
@@ -39,7 +39,7 @@ VS_Output VS_Main( VS_Input input, uint instance : SV_InstanceID )
     output.positionH = mul(output.positionH, view); // storing viewspace
     output.positionH = mul(output.positionH, projection);
     output.normal = mul(float4(input.normal, 0), world[instance]).xyz;
-    output.tex = input.tex;
+    output.tex = float3(input.tex, 0);
   
     return output;
 }
