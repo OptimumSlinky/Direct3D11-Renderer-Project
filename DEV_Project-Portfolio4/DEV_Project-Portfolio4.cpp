@@ -61,8 +61,8 @@ ComPtr<ID3D11Texture2D> gpDepthStencil = nullptr;
 ComPtr<ID3D11DepthStencilView> gpDepthStencilView = nullptr;
 ComPtr<ID3D11ShaderResourceView> gpTextureRV = nullptr;
 ComPtr<ID3D11SamplerState> gpSamplerLinear = nullptr;
-ComPtr<ID3D11RasterizerState> gpRasterState = nullptr;
-
+ComPtr<ID3D11RasterizerState> gpSkyboxRasterState = nullptr;
+ComPtr<ID3D11RasterizerState> gpDefaultRasterState = nullptr;
 
 // Matrices 
 XMMATRIX				g_Camera;
@@ -468,10 +468,10 @@ HRESULT Init3DContent()
 	};
 
 	// Create skybox vertex shader and input layout from file
-	hr = skyboxController.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", skyboxLayout, ARRAYSIZE(skyboxLayout));
+	hr = skyboxController.CreateVSandILFromFile(gpD3D_Device.Get(), "SKYBOX_VS.cso", skyboxLayout, ARRAYSIZE(skyboxLayout));
 
 	// Create skybox pixel shader from file
-	hr = skyboxController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
+	hr = skyboxController.CreatePSFromFile(gpD3D_Device.Get(), "SKYBOX_PS.cso");
 
 	// Create 3D cube for skybox
 	SimpleMesh<SimpleVertex> skybox = CreateCube();
@@ -600,8 +600,6 @@ HRESULT Init3DContent()
 
 	// Initialize skybox raster state variant
 	D3D11_RASTERIZER_DESC skyboxRasterState;
-
-	// Go through and clarify the all RasterDesc states
 	skyboxRasterState.FrontCounterClockwise = true; // Changed from default for skybox
 	skyboxRasterState.DepthBias = 0;
 	skyboxRasterState.SlopeScaledDepthBias = 0.0f;
@@ -614,7 +612,23 @@ HRESULT Init3DContent()
 	skyboxRasterState.CullMode = D3D11_CULL_BACK;
 	
 	// Create skybox raster state
-	gpD3D_Device.Get()->CreateRasterizerState(&skyboxRasterState,gpRasterState.GetAddressOf());
+	gpD3D_Device.Get()->CreateRasterizerState(&skyboxRasterState,gpSkyboxRasterState.GetAddressOf());
+
+	// Initialize default raster state variant
+	D3D11_RASTERIZER_DESC defaultRasterState;
+	defaultRasterState.FrontCounterClockwise = false; // Changed from skybox state
+	defaultRasterState.DepthBias = 0;
+	defaultRasterState.SlopeScaledDepthBias = 0.0f;
+	defaultRasterState.DepthBiasClamp = 0.0f;
+	defaultRasterState.DepthClipEnable = true;
+	defaultRasterState.ScissorEnable = false;
+	defaultRasterState.MultisampleEnable = false;
+	defaultRasterState.AntialiasedLineEnable = false;
+	defaultRasterState.FillMode = D3D11_FILL_SOLID;
+	defaultRasterState.CullMode = D3D11_CULL_BACK;
+
+	// Create default raster state
+	gpD3D_Device.Get()->CreateRasterizerState(&defaultRasterState, gpDefaultRasterState.GetAddressOf());
 
 	return S_OK;
 };
@@ -794,7 +808,7 @@ void Render()
 	g_Skybox = XMMatrixTranslationFromVector(cameraPosition);
 
 	// Create raster state for skybox
-	gpImmediateContext->RSSetState(gpRasterState.Get());
+	gpImmediateContext->RSSetState(gpSkyboxRasterState.Get());
 
 	// Draw skybox
 	ConstantBuffer skyCB;
@@ -817,7 +831,8 @@ void Render()
 	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 	
 	// Reset raster state after drawing skybox
-	gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
+	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
+	gpImmediateContext->RSSetState(gpDefaultRasterState.Get()); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
 
 	// Clear depth buffer before drawing the cubes
 	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
