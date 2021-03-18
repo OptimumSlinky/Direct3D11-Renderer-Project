@@ -16,7 +16,7 @@ SamplerState linearSampler : register(s0);
 
 struct PS_Input
 {
-    float4 positionL : SV_POSITION;
+    float4 positionL : POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 positionW : WORLDPOSITION;

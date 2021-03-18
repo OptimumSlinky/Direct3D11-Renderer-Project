@@ -89,5 +89,11 @@
     <FxCompile Include="PUPPY_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+    <FxCompile Include="SKYBOX_VS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
+    <FxCompile Include="SKYBOX_PS.hlsl">
+      <Filter>Shaders</Filter>
+    </FxCompile>
   </ItemGroup>
 </Project>

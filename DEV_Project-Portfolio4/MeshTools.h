@@ -85,4 +85,4 @@ SimpleMesh<SimpleVertex> CreateCube()
 	};
 
 	return mesh;
-}
+};
