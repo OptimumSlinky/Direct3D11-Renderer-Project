@@ -61,16 +61,23 @@ ComPtr<ID3D11Texture2D> gpDepthStencil = nullptr;
 ComPtr<ID3D11DepthStencilView> gpDepthStencilView = nullptr;
 ComPtr<ID3D11ShaderResourceView> gpTextureRV = nullptr;
 ComPtr<ID3D11SamplerState> gpSamplerLinear = nullptr;
-
+ComPtr<ID3D11RasterizerState> gpSkyboxRasterState = nullptr;
+ComPtr<ID3D11RasterizerState> gpDefaultRasterState = nullptr;
 
 // Matrices 
 XMMATRIX				g_Camera;
+XMMATRIX				g_Skybox;
 XMMATRIX                g_World[boxCount];
-XMMATRIX                g_World2;
-XMMATRIX                g_World3;
+XMMATRIX                g_OrbitCrate;
+XMMATRIX                g_Doggo;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
+
+// Skybox
+ShaderMaterials skyboxMaterials;
+ShaderController skyboxController;
+BufferController<SimpleVertex> skyboxBuffer;
 
 // 3D Cube
 ShaderMaterials cubeShaderMaterials;
@@ -429,7 +436,7 @@ HRESULT InitDevice()
 		g_World[i] = XMMatrixIdentity();
 	}
 
-	g_World2 = XMMatrixIdentity();
+	g_OrbitCrate = XMMatrixIdentity();
 
 	// Initialize view matrix
 	XMVECTOR Eye = XMVectorSet(0.0f, 3.0f, 7.0f, 0.0f);
@@ -451,6 +458,36 @@ HRESULT InitDevice()
 HRESULT Init3DContent()
 {
 	HRESULT hr = S_OK;
+
+	// Define skybox layout
+	D3D11_INPUT_ELEMENT_DESC skyboxLayout[] =
+	{
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	};
+
+	// Create skybox vertex shader and input layout from file
+	hr = skyboxController.CreateVSandILFromFile(gpD3D_Device.Get(), "SKYBOX_VS.cso", skyboxLayout, ARRAYSIZE(skyboxLayout));
+
+	// Create skybox pixel shader from file
+	hr = skyboxController.CreatePSFromFile(gpD3D_Device.Get(), "SKYBOX_PS.cso");
+
+	// Create 3D cube for skybox
+	SimpleMesh<SimpleVertex> skybox = CreateCube();
+
+	// Create skybox vertex buffers
+	skyboxBuffer.CreateBuffers(gpD3D_Device.Get(), skybox.indicesList, skybox.vertexList);
+
+	// Create skybox constant buffer
+	skyboxController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
+	skyboxController.PS_ConstantBuffer = skyboxController.VS_ConstantBuffer;
+
+	// Load skybox texture 
+	skyboxMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./SkyboxOcean.dds");
+
+	// Create skybox sampler state
+	skyboxMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// TODO: define input layout
 	D3D11_INPUT_ELEMENT_DESC cubeLayout[] =
@@ -561,8 +598,40 @@ HRESULT Init3DContent()
 	// Sampler state
 	puppyMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
+	// Initialize skybox raster state variant
+	D3D11_RASTERIZER_DESC skyboxRasterState;
+	skyboxRasterState.FrontCounterClockwise = true; // Changed from default for skybox
+	skyboxRasterState.DepthBias = 0;
+	skyboxRasterState.SlopeScaledDepthBias = 0.0f;
+	skyboxRasterState.DepthBiasClamp = 0.0f;
+	skyboxRasterState.DepthClipEnable = true;
+	skyboxRasterState.ScissorEnable = false;
+	skyboxRasterState.MultisampleEnable = false;
+	skyboxRasterState.AntialiasedLineEnable = false;
+	skyboxRasterState.FillMode = D3D11_FILL_SOLID;
+	skyboxRasterState.CullMode = D3D11_CULL_BACK;
+	
+	// Create skybox raster state
+	gpD3D_Device.Get()->CreateRasterizerState(&skyboxRasterState,gpSkyboxRasterState.GetAddressOf());
+
+	// Initialize default raster state variant
+	D3D11_RASTERIZER_DESC defaultRasterState;
+	defaultRasterState.FrontCounterClockwise = false; // Changed from skybox state
+	defaultRasterState.DepthBias = 0;
+	defaultRasterState.SlopeScaledDepthBias = 0.0f;
+	defaultRasterState.DepthBiasClamp = 0.0f;
+	defaultRasterState.DepthClipEnable = true;
+	defaultRasterState.ScissorEnable = false;
+	defaultRasterState.MultisampleEnable = false;
+	defaultRasterState.AntialiasedLineEnable = false;
+	defaultRasterState.FillMode = D3D11_FILL_SOLID;
+	defaultRasterState.CullMode = D3D11_CULL_BACK;
+
+	// Create default raster state
+	gpD3D_Device.Get()->CreateRasterizerState(&defaultRasterState, gpDefaultRasterState.GetAddressOf());
+
 	return S_OK;
-}
+};
 #pragma endregion
 
 #pragma region Deployment & Clean Up
@@ -583,22 +652,7 @@ void Render()
 		t = (timeCurrent - timeStart) / 1000.0f;
 	}
 
-	// Spin first cube around the origin
-	g_World[0] = XMMatrixRotationY(t);
-
-	// Orbit second cube around the origin
-	XMMATRIX spin = XMMatrixRotationZ(-t);
-	XMMATRIX orbit = XMMatrixRotationY(-t * 1.0f);
-	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
-	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
-	g_World2 = downscale * spin * translate * orbit;
-
-	// Place and downsize doggo 
-	XMMATRIX downscaleDoggo = XMMatrixScaling(0.075f, 0.075f, 0.075f);
-	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
-	g_World3 = downscaleDoggo * translateDoggo;
-
-	//// Setup lighting parameters
+	// Setup lighting parameters
 	XMFLOAT4 vLightPositions[3] =
 	{
 		XMFLOAT4(-4.0f, 1.5f, 0.0f, 1.0f), // point light position
@@ -619,6 +673,21 @@ void Render()
 		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), // g -> spotlight
 		XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), // b -> directional light
 	};
+
+	// Spin first cube around the origin
+	g_World[0] = XMMatrixRotationY(t);
+
+	// Orbit second cube around the origin
+	XMMATRIX spin = XMMatrixRotationZ(-t);
+	XMMATRIX orbit = XMMatrixRotationY(-t * 1.0f);
+	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
+	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
+	g_OrbitCrate = downscale * spin * translate * orbit;
+
+	// Place and downsize doggo 
+	XMMATRIX downscaleDoggo = XMMatrixScaling(0.075f, 0.075f, 0.075f);
+	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
+	g_Doggo = downscaleDoggo * translateDoggo;
 
 	// Clear the back buffer 
 	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::Black);
@@ -732,21 +801,49 @@ void Render()
 	// Stage 3: Convert updated camera back to View Space
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
-	// Update for multiple cubes
+	// SKYBOX: Determine camera's position in world space
+	XMVECTOR cameraPosition = g_Camera.r[3];
+
+	// SKYBOX: Move skybox cube to camera position
+	g_Skybox = XMMatrixTranslationFromVector(cameraPosition);
+
+	// Create raster state for skybox
+	gpImmediateContext->RSSetState(gpSkyboxRasterState.Get());
+
+	// Draw skybox
+	ConstantBuffer skyCB;
+	skyCB.mWorld[0] = g_Skybox;
+	skyCB.mView = g_View;
+	skyCB.mProjection = g_Projection;
+	skyCB.vLightPosition[0] = vLightPositions[0];
+	skyCB.vLightPosition[1] = vLightPositions[1];
+	skyCB.vLightDirection[0] = vLightDirections[0];
+	skyCB.vLightDirection[1] = vLightDirections[1];
+	skyCB.vLightColor[0] = vLightColors[0];
+	skyCB.vLightColor[1] = vLightColors[1];
+	skyCB.vLightColor[2] = vLightColors[2];
+	skyCB.vOutputColor = g_vOutputColor;
+
+	gpImmediateContext->UpdateSubresource(skyboxController.VS_ConstantBuffer.Get(), 0, nullptr, &skyCB, 0, 0);
+	skyboxMaterials.Bind(gpImmediateContext.Get());
+	skyboxController.Bind(gpImmediateContext.Get());
+	skyboxBuffer.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	
+	// Reset raster state after drawing skybox
+	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
+	gpImmediateContext->RSSetState(gpDefaultRasterState.Get()); // the above didn't work; created second raster state and switched to that instead.
+
+	// Clear depth buffer before drawing the cubes
+	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
+
+	// Create constant buffer
 	ConstantBuffer cb;
 	cb.mWorld[0] = g_World[0];
 	cb.mWorld[1] = g_World[1];
 	cb.mWorld[2] = g_World[2];
-	cb.mView = (g_View);
-	cb.mProjection = (g_Projection);
-
-	// Position and rotate instanced cubes
-	XMMATRIX instanceSpin = XMMatrixRotationY(t);
-	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
-	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
-	cb.mWorld[1] = instanceSpin * instancePOS1;
-	cb.mWorld[2] = instanceSpin * instancePOS2;
-
+	cb.mView = g_View;
+	cb.mProjection = g_Projection;
 	cb.vLightPosition[0] = vLightPositions[0];
 	cb.vLightPosition[1] = vLightPositions[1];
 	cb.vLightDirection[0] = vLightDirections[0];
@@ -755,6 +852,13 @@ void Render()
 	cb.vLightColor[1] = vLightColors[1];
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
+
+	// Position and rotate instanced cubes
+	XMMATRIX instanceSpin = XMMatrixRotationY(t);
+	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
+	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
+	cb.mWorld[1] = instanceSpin * instancePOS1;
+	cb.mWorld[2] = instanceSpin * instancePOS2;
 
 	// Render instanced cubes
 	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
@@ -765,9 +869,9 @@ void Render()
 
 	// Update for orbit cube
 	ConstantBuffer cb2;
-	cb2.mWorld[0] = g_World2;
-	cb2.mView = (g_View);
-	cb2.mProjection = (g_Projection);
+	cb2.mWorld[0] = g_OrbitCrate;
+	cb2.mView = g_View;
+	cb2.mProjection = g_Projection;
 
 	cb2.vLightPosition[0] = vLightPositions[0];
 	cb2.vLightPosition[1] = vLightPositions[1];
@@ -786,18 +890,18 @@ void Render()
 	gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Render doggo
-	cb.mWorld[0] = g_World3;
+	/*cb.mWorld[0] = g_Doggo;
 	gpImmediateContext->UpdateSubresource(puppyShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	puppyMaterials.Bind(gpImmediateContext.Get());
 	puppyShader.Bind(gpImmediateContext.Get());
 	puppyBuffer.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(31914, 0, 0);
+	gpImmediateContext->DrawIndexed(31914, 0, 0);*/
 
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
-	gridCB.gridView = (g_View);
-	gridCB.gridProjection = (g_Projection);
+	gridCB.gridView = g_View;
+	gridCB.gridProjection = g_Projection;
 	gpImmediateContext->UpdateSubresource(gridShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &gridCB, 0, 0);
 	gridShaderController.Bind(gpImmediateContext.Get());
 	gridBufferController.BindAndDraw(gpImmediateContext.Get());
@@ -820,5 +924,5 @@ void CleanupDevice()
 	if (gpImmediateContext) gpImmediateContext->Release();
 	if (gpD3D_Device1) gpD3D_Device1->Release();
 	if (gpD3D_Device) gpD3D_Device->Release();
-}
+};
 #pragma endregion
