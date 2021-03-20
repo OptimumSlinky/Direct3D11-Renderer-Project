@@ -832,7 +832,7 @@ void Render()
 	
 	// Reset raster state after drawing skybox
 	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
-	gpImmediateContext->RSSetState(gpDefaultRasterState.Get()); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
+	gpImmediateContext->RSSetState(gpDefaultRasterState.Get()); // the above didn't work; created second raster state and switched to that instead.
 
 	// Clear depth buffer before drawing the cubes
 	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
