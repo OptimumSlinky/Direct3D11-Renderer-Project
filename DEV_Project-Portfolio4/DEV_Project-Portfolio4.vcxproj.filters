@@ -48,6 +48,9 @@
     <ClInclude Include="Gateware.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DogKnight.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEV_Project-Portfolio4.cpp">
@@ -86,7 +89,7 @@
     <FxCompile Include="MAIN_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
-    <FxCompile Include="PUPPY_VS.hlsl">
+    <FxCompile Include="DOGGO_VS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
     <FxCompile Include="SKYBOX_VS.hlsl">
