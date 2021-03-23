@@ -7,7 +7,7 @@
 #include "RenderTools.h"
 #include "MeshTools.h"
 #include "Grid.h"
-#include "Doggo_fixed.h"
+#include "DogKnight.h"
 #define GATEWARE_ENABLE_CORE
 #define GATEWARE_ENABLE_INPUT
 #include "Gateware.h"
@@ -89,10 +89,10 @@ ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
 
-// Puppy
-BufferController<SimpleVertex> puppyBuffer;
-ShaderController puppyShader;
-ShaderMaterials puppyMaterials;
+// Dog Knight
+BufferController<SimpleVertex> doggoBuffer;
+ShaderController doggoShader;
+ShaderMaterials doggoMaterials;
 
 // Forward declarations 
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
@@ -539,38 +539,38 @@ HRESULT Init3DContent()
 
 	// For Loop to convert OBJ -> Vector?
 	// create new vectors for doggo
-	vector <SimpleVertex> puppyVerts;
-	vector <int> puppyIndices;
+	vector <SimpleVertex> doggoVerts;
+	vector <int> doggoIndices;
 	
-	for (size_t i = 0; i < 5250; i++)
+	for (size_t i = 0; i < 7848; i++)
 	{
 		// create temp simplevertex
 		SimpleVertex temp;
 
 		// store the data from objvert to simplevertex
-		temp.position.x = Doggo_fixed_data[i].pos[0];
-		temp.position.y = Doggo_fixed_data[i].pos[1];
-		temp.position.z = Doggo_fixed_data[i].pos[2];
+		temp.position.x = DogKnight_data[i].pos[0];
+		temp.position.y = DogKnight_data[i].pos[1];
+		temp.position.z = DogKnight_data[i].pos[2];
 
-		temp.texture.x= Doggo_fixed_data[i].uvw[0];
-		temp.texture.y = Doggo_fixed_data[i].uvw[1];
+		temp.texture.x= DogKnight_data[i].uvw[0];
+		temp.texture.y = DogKnight_data[i].uvw[1];
 
-		temp.normal.x = Doggo_fixed_data[i].nrm[0];
-		temp.normal.y = Doggo_fixed_data[i].nrm[1];
-		temp.normal.z = Doggo_fixed_data[i].nrm[2];
+		temp.normal.x = DogKnight_data[i].nrm[0];
+		temp.normal.y = DogKnight_data[i].nrm[1];
+		temp.normal.z = DogKnight_data[i].nrm[2];
 
 		//push into vector
-		puppyVerts.push_back(temp);
+		doggoVerts.push_back(temp);
 	}
 
-	for (size_t i = 0; i < 24714; i++)
+	for (size_t i = 0; i < 11412; i++)
 	{
-		int temp = Doggo_fixed_indicies[i];
-		puppyIndices.push_back(temp);
+		int temp = DogKnight_indicies[i];
+		doggoIndices.push_back(temp);
 	}
 
 	 // Create doggo input layout
-	D3D11_INPUT_ELEMENT_DESC puppyLayout[] =
+	D3D11_INPUT_ELEMENT_DESC doggoLayout[] =
 	{
 		
 		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
@@ -578,25 +578,23 @@ HRESULT Init3DContent()
 		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
 		
 	};
-	hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "PUPPY_VS.cso", puppyLayout, ARRAYSIZE(puppyLayout));
-
-	// hr = puppyShader.CreateVSandILFromFile(gpD3D_Device.Get(), "PUPPY_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
+	hr = doggoShader.CreateVSandILFromFile(gpD3D_Device.Get(), "DOGGO_VS.cso", doggoLayout, ARRAYSIZE(doggoLayout));
 
 	// Create puppy pixel shader
-	hr = puppyShader.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
+	hr = doggoShader.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create puppy vertex + index buffer
-	hr = puppyBuffer.CreateBuffers(gpD3D_Device.Get(), puppyIndices, puppyVerts); 
+	hr = doggoBuffer.CreateBuffers(gpD3D_Device.Get(), doggoIndices, doggoVerts); 
 
 	// Constant buffer
-	puppyShader.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
-	puppyShader.PS_ConstantBuffer = puppyShader.VS_ConstantBuffer;
+	doggoShader.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
+	doggoShader.PS_ConstantBuffer = doggoShader.VS_ConstantBuffer;
 
 	// Load puppy textures
-	puppyMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./Shiba.dds");
+	doggoMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./DK_StandardAlbedo.dds");
 
 	// Sampler state
-	puppyMaterials.CreateDefaultSampler(gpD3D_Device.Get());
+	doggoMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Initialize skybox raster state variant
 	D3D11_RASTERIZER_DESC skyboxRasterState;
@@ -685,7 +683,7 @@ void Render()
 	g_OrbitCrate = downscale * spin * translate * orbit;
 
 	// Place and downsize doggo 
-	XMMATRIX downscaleDoggo = XMMatrixScaling(0.075f, 0.075f, 0.075f);
+	XMMATRIX downscaleDoggo = XMMatrixScaling(0.05f, 0.05f, 0.05f);
 	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
 	g_Doggo = downscaleDoggo * translateDoggo;
 
@@ -890,12 +888,12 @@ void Render()
 	gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Render doggo
-	/*cb.mWorld[0] = g_Doggo;
-	gpImmediateContext->UpdateSubresource(puppyShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	puppyMaterials.Bind(gpImmediateContext.Get());
-	puppyShader.Bind(gpImmediateContext.Get());
-	puppyBuffer.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(31914, 0, 0);*/
+	cb.mWorld[0] = g_Doggo;
+	gpImmediateContext->UpdateSubresource(doggoShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	doggoMaterials.Bind(gpImmediateContext.Get());
+	doggoShader.Bind(gpImmediateContext.Get());
+	doggoBuffer.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexed(11412, 0, 0);
 
 	// Render gridlines
 	GridConstantBuffer gridCB;
