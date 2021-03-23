@@ -43,6 +43,7 @@ float4 PS_Main(PS_Input input) : SV_Target
     // Directional Lighting 
     float dirLightRatio = saturate(dot(-vLightDirection[2].xyz, input.normal)); // clamp(dot(-LightDir, SurfaceNormal))
     directionalLight = dirLightRatio * vLightColor[2] * textureColor; // LightRatio * LightColor * SurfaceColor
+    
     // Specular addition
     //float dlViewDir = normalize(view - input.positionW); // normalize(camera world position - surface position)
     //float dlHalfVec = normalize((-vLightDirection[2].xyz) + dlViewDir); // normalize((-light direction) + view direction)
