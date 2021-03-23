@@ -34,6 +34,7 @@ struct ConstantBuffer
 	XMFLOAT4 vLightDirection[3];
 	XMFLOAT4 vLightColor[3];
 	XMFLOAT4 vOutputColor;
+	XMVECTOR CameraPosition;
 };
 
 struct GridConstantBuffer
@@ -580,17 +581,17 @@ HRESULT Init3DContent()
 	};
 	hr = doggoShader.CreateVSandILFromFile(gpD3D_Device.Get(), "DOGGO_VS.cso", doggoLayout, ARRAYSIZE(doggoLayout));
 
-	// Create puppy pixel shader
+	// Create doggo pixel shader
 	hr = doggoShader.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
-	// Create puppy vertex + index buffer
+	// Create doggo vertex + index buffer
 	hr = doggoBuffer.CreateBuffers(gpD3D_Device.Get(), doggoIndices, doggoVerts); 
 
 	// Constant buffer
 	doggoShader.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
 	doggoShader.PS_ConstantBuffer = doggoShader.VS_ConstantBuffer;
 
-	// Load puppy textures
+	// Load doggo textures
 	doggoMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./DK_StandardAlbedo.dds");
 
 	// Sampler state
@@ -683,7 +684,7 @@ void Render()
 	g_OrbitCrate = downscale * spin * translate * orbit;
 
 	// Place and downsize doggo 
-	XMMATRIX downscaleDoggo = XMMatrixScaling(0.05f, 0.05f, 0.05f);
+	XMMATRIX downscaleDoggo = XMMatrixScaling(0.025f, 0.025f, 0.025f);
 	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
 	g_Doggo = downscaleDoggo * translateDoggo;
 
@@ -850,6 +851,7 @@ void Render()
 	cb.vLightColor[1] = vLightColors[1];
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
+	cb.CameraPosition = cameraPosition;
 
 	// Position and rotate instanced cubes
 	XMMATRIX instanceSpin = XMMatrixRotationY(t);
@@ -879,6 +881,8 @@ void Render()
 	cb2.vLightColor[1] = vLightColors[1];
 	cb2.vLightColor[2] = vLightColors[2];
 	cb2.vOutputColor = g_vOutputColor;
+	// cb2.CameraPosition = *(XMFLOAT4*)&cameraPosition;
+	cb2.CameraPosition = cameraPosition;
 
 	// Render orbit cube
 	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);

@@ -9,6 +9,7 @@ cbuffer ConstantBuffer : register(b0)
     float4 vLightDirection[2];
     float4 vLightColor[2];
     float4 vOutputColor;
+    float4 CameraPosition;
 }
 
 Texture2D diffuseTexture : register(t0);
