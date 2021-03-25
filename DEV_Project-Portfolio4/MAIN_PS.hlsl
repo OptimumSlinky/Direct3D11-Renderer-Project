@@ -17,7 +17,7 @@ SamplerState linearSampler : register(s0);
 
 struct PS_Input
 {
-    float4 positionL : POSITION;
+    float4 positionL : SV_POSITION;
     float2 tex : TEXCOORD0;
     float3 normal : NORMAL;
     float3 positionW : WORLDPOSITION;
@@ -32,6 +32,7 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     // Get Texture Color
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
+    float4 SurfaceSpecColor = float4(1.0f, 1.0f, 1.0f, 1.0f); // For specular calcs; white
             
     // Create outputs for different light implementations
     float4 directionalLight = 0;
@@ -42,30 +43,28 @@ float4 PS_Main(PS_Input input) : SV_Target
     float4 ambientLight = textureColor * 0.30f;
     
     // Directional Lighting 
-    float dirLightRatio = saturate(dot(-vLightDirection[2].xyz, input.normal)); // clamp(dot(-LightDir, SurfaceNormal))
+    float dirLightRatio = saturate(dot(normalize(-vLightDirection[2].xyz), input.normal)); // clamp(dot(-LightDir, SurfaceNormal))
     directionalLight = dirLightRatio * vLightColor[2] * textureColor; // LightRatio * LightColor * SurfaceColor
 
     // Specular for directional light (Clark's version)
     float3 VecToCam = CameraPosition - input.positionW; // float3 vToCam = vCameraPos - vSurfaceWorldPos;
     VecToCam = normalize(VecToCam); // vToCam = normalize(vToCam);
-    float3 LightVec = vLightDirection[2].xyz; // float3 vLightVec = vDirLightDirection; (For point light -> vLightVec = normalize(SurfacePos - vPointLightPos);
+    float3 LightVec = normalize(vLightDirection[2].xyz); // float3 vLightVec = vDirLightDirection; (For point light -> vLightVec = normalize(SurfacePos - vPointLightPos);
     float3 ReflectVec = reflect(LightVec, input.normal); // float3 vReflect = reflect(vLightVec, vSurfaceNormal);
     float SpecDot = saturate(dot(ReflectVec, VecToCam)); // fSpecDot = saturate(dot(vReflect, vToCam));
     SpecDot = pow(SpecDot, 32.0f); // fSpecDot = pow(fSpecDot, fSpecPower);
-    float3 SpecDLfinal = textureColor * vLightColor[2] * SpecDot; // float3 vSpecFinal = vSurfaceSpecColor[usually white] * vLightSpecColor[light color] * fSpecDot;
+    float3 SpecDLfinal = SurfaceSpecColor * vLightColor[2] * SpecDot; // float3 vSpecFinal = vSurfaceSpecColor[usually white] * vLightSpecColor[light color] * fSpecDot;
 
     // Point Light (position; no direction)
     float3 pointLightDir = normalize(vLightPosition[0].xyz - input.positionW); // LightDir = normalize(LightPos - SurfacePos)
     float pointLightRatio = saturate(dot((float3) pointLightDir, input.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal)
     
     // Specular for point light (Clark's version)
-    float3 ptVecToCam = CameraPosition - input.positionW; // float3 vToCam = vCameraPos - vSurfaceWorldPos;
-    ptVecToCam = normalize(VecToCam); // vToCam = normalize(vToCam);
     float3 ptLightVec = normalize(input.positionW - vLightPosition[0].xyz); // float3 vLightVec = normalize(SurfacePos - vPointLightPos);
     float3 ptReflectVec = reflect(ptLightVec, input.normal); // float3 vReflect = reflect(vLightVec, vSurfaceNormal);
-    float ptSpecDot = saturate(dot(ptReflectVec, ptVecToCam)); // fSpecDot = saturate(dot(vReflect, vToCam));
-    ptSpecDot = pow(SpecDot, 32.0f); // fSpecDot = pow(fSpecDot, fSpecPower);
-    float3 SpecPTfinal = textureColor * vLightColor[2] * ptSpecDot; // float3 vSpecFinal = vSurfaceSpecColor[usually white] * vLightSpecColor[light color] * fSpecDot;
+    float ptSpecDot = saturate(dot(ptReflectVec, VecToCam)); // fSpecDot = saturate(dot(vReflect, vToCam));
+    ptSpecDot = pow(ptSpecDot, 32.0f); // fSpecDot = pow(fSpecDot, fSpecPower);
+    float3 SpecPTfinal = SurfaceSpecColor * vLightColor[2] * ptSpecDot; // float3 vSpecFinal = vSurfaceSpecColor[usually white] * vLightSpecColor[light color] * fSpecDot;
 
     // Attenuation
     //float attenuation = 1.0f - saturate(length(vLightPosition[0].xyz - input.positionW) / 1.5f);
@@ -73,7 +72,7 @@ float4 PS_Main(PS_Input input) : SV_Target
 
     // Spotlight
     float3 spotLightDir = normalize(vLightPosition[1].xyz - input.positionW); // LightDir = normalize(LightPos - SurfacePos)
-    float spotSurfaceRatio = saturate(dot(-spotLightDir, vLightDirection[0].xyz)); // SurfaceRatio = clamp(dot(-LightDir, ConeDir))
+    float spotSurfaceRatio = saturate(dot(-spotLightDir, normalize(vLightDirection[0].xyz))); // SurfaceRatio = clamp(dot(-LightDir, ConeDir))
     float spotFactor = spotSurfaceRatio > 0.8 ? 1 : 0; //SpotFactor = (SurfaceRatio > ConeRatio) ? 1:0
     float spotLightRatio = saturate(dot((float3)spotLightDir, input.normal)); // LightRatio = clamp(dot(LightDir, SurfaceNormal))
 
@@ -87,5 +86,5 @@ float4 PS_Main(PS_Input input) : SV_Target
     spotLight.a = 1;
 
     // Send it
-    return saturate(ambientLight + directionalLight + pointLight + spotLight + (SpecDLfinal, 0) + (SpecPTfinal, 0));
+    return saturate(ambientLight + directionalLight + pointLight + spotLight + float4(SpecDLfinal, 0) + float4(SpecPTfinal, 0));
 };

@@ -194,37 +194,43 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
 	{
-	case WM_COMMAND:
-	{
-		int wmId = LOWORD(wParam);
-		// Parse the menu selections:
-		switch (wmId)
+		case WM_COMMAND:
 		{
-		case IDM_ABOUT:
+			int wmId = LOWORD(wParam);
+			// Parse the menu selections:
+			switch (wmId)
+			{
+			case IDM_ABOUT:
 			DialogBox(g_hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
-		case IDM_EXIT:
+				break;
+			
+			case IDM_EXIT:
 			DestroyWindow(hWnd);
-			break;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
+				break;
+			
+			default:
+				return DefWindowProc(hWnd, message, wParam, lParam);
+			}
 		}
-	}
 	break;
+	
 	case WM_PAINT:
-	{
+		{
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
 		EndPaint(hWnd, &ps);
-	}
+		}
 	break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;
+	
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
+
 	return 0;
 }
 
@@ -847,6 +853,7 @@ void Render()
 	cb.vLightPosition[1] = vLightPositions[1];
 	cb.vLightDirection[0] = vLightDirections[0];
 	cb.vLightDirection[1] = vLightDirections[1];
+	cb.vLightDirection[2] = vLightDirections[2];
 	cb.vLightColor[0] = vLightColors[0];
 	cb.vLightColor[1] = vLightColors[1];
 	cb.vLightColor[2] = vLightColors[2];
@@ -877,6 +884,7 @@ void Render()
 	cb2.vLightPosition[1] = vLightPositions[1];
 	cb2.vLightDirection[0] = vLightDirections[0];
 	cb2.vLightDirection[1] = vLightDirections[1];
+	cb2.vLightDirection[2] = vLightDirections[2];
 	cb2.vLightColor[0] = vLightColors[0];
 	cb2.vLightColor[1] = vLightColors[1];
 	cb2.vLightColor[2] = vLightColors[2];
