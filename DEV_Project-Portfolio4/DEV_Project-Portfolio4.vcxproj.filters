@@ -42,9 +42,6 @@
     <ClInclude Include="MeshTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Doggo_fixed.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Gateware.h">
       <Filter>Header Files</Filter>
     </ClInclude>

@@ -128,6 +128,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 
 	// Main message loop
 	MSG msg = { 0 };
+	Init3DContent();
 	while (WM_QUIT != msg.message)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -137,7 +138,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else
 		{
-			Init3DContent();
 			Render();
 		}
 	}
@@ -701,7 +701,7 @@ void Render()
 	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
 	// Stage 2: Get user input and apply motion
-	float moveScale = 0.025f;
+	float moveScale = 0.0015f;
 
 	if (GetAsyncKeyState('W'))
 	{
@@ -783,7 +783,7 @@ void Render()
 	// Floats for storing movement deltas
 	float deltaX;
 	float deltaY;
-	float mouseScale = 0.0025f; 
+	float mouseScale = 0.0015f; 
 
 	//Gateware black magic
 	GW::GReturn result;
