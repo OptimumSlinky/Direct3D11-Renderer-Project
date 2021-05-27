@@ -25,6 +25,7 @@
 #include "MeshTools.h"
 #include "Grid.h"
 #include "RenderTools.h"
+#include "Pools.h"
 
 // D3D11 library dependencies
 #pragma comment(lib, "d3d11.lib")

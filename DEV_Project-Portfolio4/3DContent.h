@@ -35,9 +35,6 @@ HRESULT Init3DContent()
 	// Create sampler state
 	cubeShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
-	// Clear the debug grid
-	gridlines.clear();
-
 	// Create grid
 	DrawGrid();
 

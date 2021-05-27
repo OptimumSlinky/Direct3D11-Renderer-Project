@@ -9,7 +9,7 @@ using namespace std;
 using Microsoft::WRL::ComPtr;
 
 // Global variables
-LPCWSTR g_WindowClassName = L"Project&Portfolio4";      // The title bar text
+LPCWSTR g_WindowClassName = L"EngineDev";      // The title bar text
 LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
 LONG g_WindowWidth = 1280;
 LONG g_WindowHeight = 720;
@@ -18,6 +18,7 @@ const UINT boxCount = 3;
 GW::INPUT::GInput MouseLook;
 static float t = 0.0f;
 float moveScale = 0.0015f;
+XMFLOAT3 gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
 
 struct ConstantBuffer
 {
@@ -56,15 +57,12 @@ ComPtr<ID3D11Texture2D> gpDepthStencil = nullptr;
 ComPtr<ID3D11DepthStencilView> gpDepthStencilView = nullptr;
 ComPtr<ID3D11ShaderResourceView> gpTextureRV = nullptr;
 ComPtr<ID3D11SamplerState> gpSamplerLinear = nullptr;
-ComPtr<ID3D11RasterizerState> gpSkyboxRasterState = nullptr;
 ComPtr<ID3D11RasterizerState> gpDefaultRasterState = nullptr;
 
 // Matrices 
 XMMATRIX				g_Camera;
-XMMATRIX				g_Skybox;
 XMMATRIX                g_World[boxCount];
 XMMATRIX                g_OrbitCrate;
-XMMATRIX                g_Doggo;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
