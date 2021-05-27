@@ -1,5 +1,6 @@
 #pragma once
 #include "targetver.h"
+#include "Resource.h"
 
 // Windows Header Files
 #define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
@@ -19,6 +20,11 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 #include "DDSTextureLoader.h" // For texture loading
+
+// Other
+#include "MeshTools.h"
+#include "Grid.h"
+#include "RenderTools.h"
 
 // D3D11 library dependencies
 #pragma comment(lib, "d3d11.lib")

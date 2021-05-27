@@ -60,18 +60,12 @@
     <ClInclude Include="Pools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Particle.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEV_Project-Portfolio4.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Particle.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

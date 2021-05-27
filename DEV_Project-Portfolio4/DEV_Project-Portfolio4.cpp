@@ -2,10 +2,6 @@
 // Trevor Cook
 
 #pragma region Project Set Up
-#include "Resource.h"
-#include "targetver.h"
-#include "Window.h"
-#include "Device.h"
 #include "3DContent.h"
 
 // Forward declarations 

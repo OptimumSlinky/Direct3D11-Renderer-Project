@@ -1,5 +1,5 @@
 #pragma once
-#include "Definitions.h"
+#include "Window.h"
 
 HRESULT Init3DContent()
 {
