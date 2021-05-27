@@ -1,5 +1,6 @@
 #pragma once
 #include "framework.h"
+#include "Definitions.h"
 #include <wrl\client.h>
 
 using namespace DirectX;
