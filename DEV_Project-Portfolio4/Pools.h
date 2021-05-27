@@ -77,23 +77,35 @@ namespace end
 		// Returns -1 if no free elements remain
 		int16_t alloc()
 		{
+			int16_t index = free_start;
+			free_start = pool[index].next;
+			return index;
 		}
 
 		// Adds 'index' to the free list
 		void free(int16_t index)
 		{
+			pool[index].next = free_start;
+			free_start = index;
 		}
 
 		// Initializes the free list
 		pool_t()
 		{
+			pool[N].next = N + 1;
 		}
 
 		// Returns the value at the specified index
-		T& operator[](int16_t index) { }
+		T& operator[](int16_t index) 
+		{ 
+			return pool[index]; 
+		}
 
 		// Returns the value at the specified index
-		const T& operator[](int16_t index)const { }
+		const T& operator[](int16_t index)const 
+		{ 
+			return pool[index]; 
+		}
 
 	private:
 
