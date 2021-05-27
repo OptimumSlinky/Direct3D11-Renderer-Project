@@ -2,7 +2,6 @@
 #include "framework.h"
 #include "MeshTools.h"
 #include "Grid.h"
-#include "DogKnight.h"
 #include "RenderTools.h"
 #define GATEWARE_ENABLE_CORE
 #define GATEWARE_ENABLE_INPUT
@@ -20,6 +19,8 @@ LONG g_WindowHeight = 720;
 const BOOL g_EnableVSync = TRUE;
 const UINT boxCount = 3;
 GW::INPUT::GInput MouseLook;
+static float t = 0.0f;
+float moveScale = 0.0015f;
 
 struct ConstantBuffer
 {

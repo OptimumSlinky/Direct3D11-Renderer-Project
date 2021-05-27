@@ -8,7 +8,6 @@
 #include "Window.h"
 #include "Device.h"
 #include "3DContent.h"
-#include "Controls.h"
 
 // Forward declarations 
 void CleanupDevice();
@@ -48,6 +47,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 		}
 		else
 		{
+			Update();
 			Render();
 		}
 	}
@@ -60,8 +60,6 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 #pragma region Deployment & Clean Up
 void Render()
 {
-	UpdateTime();
-
 	// Setup lighting parameters
 	XMFLOAT4 vLightPositions[3] =
 	{
@@ -94,47 +92,14 @@ void Render()
 	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 	g_OrbitCrate = downscale * spin * translate * orbit;
 
-	// Place and downsize doggo 
-	XMMATRIX downscaleDoggo = XMMatrixScaling(0.025f, 0.025f, 0.025f);
-	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
-	g_Doggo = downscaleDoggo * translateDoggo;
-
 	// Clear the back buffer 
 	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::Black);
 
 	// Clear the depth buffer to max depth (1.0f)
 	gpImmediateContext->ClearDepthStencilView(gpDepthStencilView.Get(), D3D11_CLEAR_DEPTH, 1.0f, 0);
 
-	UpdateCamera();
-
 	// SKYBOX: Determine camera's position in world space
 	XMVECTOR cameraPosition = g_Camera.r[3];
-
-	// SKYBOX: Move skybox cube to camera position
-	g_Skybox = XMMatrixTranslationFromVector(cameraPosition);
-
-	// Create raster state for skybox
-	gpImmediateContext->RSSetState(gpSkyboxRasterState.Get());
-
-	// Draw skybox
-	ConstantBuffer skyCB;
-	skyCB.mWorld[0] = g_Skybox;
-	skyCB.mView = g_View;
-	skyCB.mProjection = g_Projection;
-	skyCB.vLightPosition[0] = vLightPositions[0];
-	skyCB.vLightPosition[1] = vLightPositions[1];
-	skyCB.vLightDirection[0] = vLightDirections[0];
-	skyCB.vLightDirection[1] = vLightDirections[1];
-	skyCB.vLightColor[0] = vLightColors[0];
-	skyCB.vLightColor[1] = vLightColors[1];
-	skyCB.vLightColor[2] = vLightColors[2];
-	skyCB.vOutputColor = g_vOutputColor;
-
-	gpImmediateContext->UpdateSubresource(skyboxController.VS_ConstantBuffer.Get(), 0, nullptr, &skyCB, 0, 0);
-	skyboxMaterials.Bind(gpImmediateContext.Get());
-	skyboxController.Bind(gpImmediateContext.Get());
-	skyboxBuffer.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
 	// Reset raster state after drawing skybox
 	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
@@ -190,7 +155,6 @@ void Render()
 	cb2.vLightColor[1] = vLightColors[1];
 	cb2.vLightColor[2] = vLightColors[2];
 	cb2.vOutputColor = g_vOutputColor;
-	// cb2.CameraPosition = *(XMFLOAT4*)&cameraPosition;
 	cb2.CameraPosition = cameraPosition;
 
 	// Render orbit cube
@@ -199,14 +163,6 @@ void Render()
 	cubeShaderController.Bind(gpImmediateContext.Get());
 	cubeBufferController.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(36, 0, 0);
-
-	// Render doggo
-	cb.mWorld[0] = g_Doggo;
-	gpImmediateContext->UpdateSubresource(doggoShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	doggoMaterials.Bind(gpImmediateContext.Get());
-	doggoShader.Bind(gpImmediateContext.Get());
-	doggoBuffer.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(11412, 0, 0);
 
 	// Render gridlines
 	GridConstantBuffer gridCB;
@@ -219,6 +175,124 @@ void Render()
 
 	// Present back buffer information to the front buffer (user viewpoint)
 	gpSwapChain->Present(0, 0);
+}
+void Update()
+{
+	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
+	{
+		t += (float)XM_PI * 0.0125f;
+	}
+	else
+	{
+		static ULONGLONG timeStart = 0;
+		ULONGLONG timeCurrent = GetTickCount64();
+		if (timeStart == 0)
+			timeStart = timeCurrent;
+		t = (timeCurrent - timeStart) / 1000.0f;
+	}
+
+	if (GetAsyncKeyState('W'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, 0, moveScale);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('S'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, 0, -moveScale);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('A'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(-moveScale, 0, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('D'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(moveScale, 0, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('Q'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationZ(-t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('E'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationZ(t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('R'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationX(-t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('F'))
+	{
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX temp = XMMatrixRotationX(t * 0.00075f); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	if (GetAsyncKeyState('T'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, moveScale, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	if (GetAsyncKeyState('G'))
+	{
+		XMMATRIX temp = XMMatrixTranslation(0, -moveScale, 0);
+		g_Camera = XMMatrixMultiply(temp, g_Camera);
+	}
+
+	// Mouse Look Implementation
+	// Floats for storing movement deltas
+	float deltaX;
+	float deltaY;
+	float mouseScale = 0.0015f;
+
+	//Gateware black magic
+	GW::GReturn result;
+	result = MouseLook.GetMouseDelta(deltaY, deltaX);
+
+	if (G_PASS(result) && result != GW::GReturn::REDUNDANT)
+	{
+		XMMATRIX tempX = XMMatrixRotationX(deltaX * mouseScale);
+		g_Camera = XMMatrixMultiply(tempX, g_Camera); // X rotation complete; go do global Y
+
+		// Do global Y here
+		// To solve weird rotation angles (for global rotation)
+		XMVECTOR position = g_Camera.r[3]; // Save matrix position
+		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
+		XMMATRIX tempY = XMMatrixRotationY(deltaY * mouseScale); // Rotate
+		g_Camera = XMMatrixMultiply(g_Camera, tempY); // Multiply matrices in reverse order
+		g_Camera.r[3] = position; // Return to original position
+	}
+
+	// Stage 3: Convert updated camera back to View Space
+	g_View = XMMatrixInverse(nullptr, g_Camera);
 };
 
 void CleanupDevice()
