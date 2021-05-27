@@ -13,9 +13,9 @@
 // Forward declarations 
 void CleanupDevice();
 void Render();
+void Update();
 #pragma endregion
 
-#pragma region Win 32 API 
 // Entry point for the application.
 int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
