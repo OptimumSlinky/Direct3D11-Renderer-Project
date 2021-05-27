@@ -72,11 +72,6 @@ XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
 
-// Skybox
-ShaderMaterials skyboxMaterials;
-ShaderController skyboxController;
-BufferController<SimpleVertex> skyboxBuffer;
-
 // 3D Cube
 ShaderMaterials cubeShaderMaterials;
 ShaderController cubeShaderController;
@@ -86,8 +81,3 @@ BufferController<SimpleVertex> cubeBufferController;
 ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
-
-// Dog Knight
-BufferController<SimpleVertex> doggoBuffer;
-ShaderController doggoShader;
-ShaderMaterials doggoMaterials;

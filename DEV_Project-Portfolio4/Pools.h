@@ -12,25 +12,53 @@ namespace end
 		// Todo: Implement the function bodies
 
 		// Returns the number of active elements
-		size_t size()const {}
+		size_t size()const
+		{
+			return active_count;
+		}
 
 		// Returns the maximum supported number of elements 
-		size_t capacity()const { }
+		size_t capacity()const
+		{
+			return N;
+		}
 
 		// Returns the value at the specified index
-		T& operator[](int16_t index) {  }
+		T& operator[](int16_t index)
+		{
+			return pool[index];
+		}
 
 		// Returns the value at the specified index
-		const T& operator[](int16_t index)const {  }
+		const T& operator[](int16_t index)const
+		{
+			return pool[index];
+		}
 
 		// Returns the index of the first inactive element 
 		//   and updates the active count
 		// Returns -1 if no inactive elements remain
-		int16_t alloc(){}
+		int16_t alloc()
+		{
+			int16_t elementsFree = N - active_count;
+
+			if (elementsFree => 0)
+			{
+				return -1;
+			}
+
+			else
+			{
+				return active_count++;
+			}
+		}
 
 		// Moves the element at 'index' to the inactive
 		// region and updates the active count
-		void free(int16_t index){}
+		void free(int16_t index)
+		{
+			swap(pool[index], pool[--active_count]);
+		}
 
 	private:
 
@@ -42,7 +70,7 @@ namespace end
 	template<typename T, int16_t N>
 	class pool_t
 	{
-		public:
+	public:
 		// Todo: Implement the function bodies
 
 		// Removes the first element from the free list and returns its index
@@ -73,8 +101,8 @@ namespace end
 		{
 			T value;
 			int16_t next;
-			
-			element_t(){}
+
+			element_t() {}
 		};
 
 		element_t pool[N];

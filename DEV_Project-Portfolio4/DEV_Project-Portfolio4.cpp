@@ -1,4 +1,3 @@
-// DEV_Project-Portfolio4.cpp 
 // Started: January 2020
 // Trevor Cook
 
@@ -182,6 +181,7 @@ void Update()
 	{
 		t += (float)XM_PI * 0.0125f;
 	}
+
 	else
 	{
 		static ULONGLONG timeStart = 0;
