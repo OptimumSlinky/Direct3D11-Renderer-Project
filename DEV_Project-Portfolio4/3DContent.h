@@ -14,26 +14,26 @@ HRESULT Init3DContent()
 	};
 
 	// Create vertex shader and input layout from file
-	hr = cubeShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
+	hr = crateShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "MAIN_VS.cso", cubeLayout, ARRAYSIZE(cubeLayout));
 
 	// Create pixel shader from file
-	hr = cubeShaderController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
+	hr = crateShaderController.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// Create 3D cube
 	SimpleMesh<SimpleVertex> crate = CreateCube();
 
 	// Create vertex buffers
-	cubeBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indicesList, crate.vertexList);
+	crateBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indicesList, crate.vertexList);
 
 	// Create constant buffer
-	cubeShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
-	cubeShaderController.PS_ConstantBuffer = cubeShaderController.VS_ConstantBuffer;
+	crateShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
+	crateShaderController.PS_ConstantBuffer = crateShaderController.VS_ConstantBuffer;
 
 	// Load texture 
-	cubeShaderMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./crate.dds");
+	crateShaderMaterials.CreateTextureFromFile(gpD3D_Device.Get(), "./crate.dds");
 
 	// Create sampler state
-	cubeShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
+	crateShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Create grid
 	DrawGrid();

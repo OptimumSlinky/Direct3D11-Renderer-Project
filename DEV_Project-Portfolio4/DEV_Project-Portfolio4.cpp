@@ -56,7 +56,7 @@ void Update()
 {
 	if (g_driverType == D3D_DRIVER_TYPE_REFERENCE)
 	{
-		t += (float)XM_PI * 0.0125f;
+		deltaTime += (float)XM_PI * 0.0125f;
 	}
 
 	else
@@ -65,7 +65,7 @@ void Update()
 		ULONGLONG timeCurrent = GetTickCount64();
 		if (timeStart == 0)
 			timeStart = timeCurrent;
-		t = (timeCurrent - timeStart) / 1000.0f;
+		deltaTime = (timeCurrent - timeStart) / 1000.0f;
 	}
 
 	if (GetAsyncKeyState('W'))
@@ -97,7 +97,7 @@ void Update()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationZ(-t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationZ(-deltaTime * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
@@ -107,7 +107,7 @@ void Update()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationZ(t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationZ(deltaTime * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
@@ -117,7 +117,7 @@ void Update()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationX(-t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationX(-deltaTime * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
@@ -127,7 +127,7 @@ void Update()
 		// To solve weird rotation angles (for global rotation)
 		XMVECTOR position = g_Camera.r[3]; // Save matrix position
 		g_Camera.r[3] = XMVectorSet(0, 0, 0, 1); // Place matrix at origin
-		XMMATRIX temp = XMMatrixRotationX(t * 0.00075f); // Rotate
+		XMMATRIX temp = XMMatrixRotationX(deltaTime * 0.00075f); // Rotate
 		g_Camera = XMMatrixMultiply(g_Camera, temp); // Multiply matrices in reverse order
 		g_Camera.r[3] = position; // Return to original position
 	}
@@ -170,6 +170,11 @@ void Update()
 
 	// Stage 3: Convert updated camera back to View Space
 	g_View = XMMatrixInverse(nullptr, g_Camera);
+
+	// Particle Emitters
+	XMFLOAT3 newVelocity = XMFLOAT3(0.0f, -1.0f, 0.0f) * gravity * deltaTime;
+	Emitter AlphaEmitter;
+	AlphaEmitter.UpdateParticles();
 };
 
 #pragma region Deployment & Clean Up
@@ -198,11 +203,11 @@ void Render()
 	};
 
 	// Spin first cube around the origin
-	g_World[0] = XMMatrixRotationY(t);
+	g_World[0] = XMMatrixRotationY(deltaTime);
 
 	// Orbit second cube around the origin
-	XMMATRIX spin = XMMatrixRotationZ(-t);
-	XMMATRIX orbit = XMMatrixRotationY(-t * 1.0f);
+	XMMATRIX spin = XMMatrixRotationZ(-deltaTime);
+	XMMATRIX orbit = XMMatrixRotationY(-deltaTime * 1.0f);
 	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
 	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
 	g_OrbitCrate = downscale * spin * translate * orbit;
@@ -242,17 +247,17 @@ void Render()
 	cb.CameraPosition = cameraPosition;
 
 	// Position and rotate instanced cubes
-	XMMATRIX instanceSpin = XMMatrixRotationY(t);
+	XMMATRIX instanceSpin = XMMatrixRotationY(deltaTime);
 	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
 	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
 	cb.mWorld[1] = instanceSpin * instancePOS1;
 	cb.mWorld[2] = instanceSpin * instancePOS2;
 
 	// Render instanced cubes
-	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	cubeShaderController.Bind(gpImmediateContext.Get());
-	cubeBufferController.Bind(gpImmediateContext.Get());
+	gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	crateShaderMaterials.Bind(gpImmediateContext.Get());
+	crateShaderController.Bind(gpImmediateContext.Get());
+	crateBufferController.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
 	// Update for orbit cube
@@ -273,10 +278,10 @@ void Render()
 	cb2.CameraPosition = cameraPosition;
 
 	// Render orbit cube
-	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
-	cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	cubeShaderController.Bind(gpImmediateContext.Get());
-	cubeBufferController.Bind(gpImmediateContext.Get());
+	gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	crateShaderMaterials.Bind(gpImmediateContext.Get());
+	crateShaderController.Bind(gpImmediateContext.Get());
+	crateBufferController.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Clear the debug grid
