@@ -172,7 +172,8 @@ void Update()
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
 	// Particle Emitters
-	XMFLOAT3 newVelocity = XMFLOAT3(0.0f, -1.0f, 0.0f) * gravity * deltaTime;
+	XMFLOAT3 newVelocity;
+	newVelocity += XMFLOAT3(0.0f, -1.0f, 0.0f) * gravity * deltaTime;
 	Emitter AlphaEmitter;
 	AlphaEmitter.UpdateParticles();
 };
@@ -186,7 +187,7 @@ void Render()
 		XMFLOAT4(-4.0f, 1.5f, 0.0f, 1.0f), // point light position
 		XMFLOAT4(0.0f, -3.0f, 6.0f, 1.0f), // spotlight
 		XMFLOAT4(0.0f, 0.0f, 0.0f, 1.0f),
-	};
+	};                                                           
 
 	XMFLOAT4 vLightDirections[3] =
 	{
