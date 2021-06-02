@@ -18,7 +18,7 @@ const UINT boxCount = 3;
 GW::INPUT::GInput MouseLook;
 static float deltaTime = 0.0f;
 float moveScale = 0.0015f;
-XMFLOAT3 gravity = XMFLOAT3(0.0f, -9.8f, 0.0f);
+XMVECTORF32 gravity = { 0.0f, -9.8f, 0.0f };
 float particleLaunchSpeed = 1.0f;
 
 struct ConstantBuffer
@@ -81,14 +81,14 @@ BufferController<GridVertex> gridBufferController;
 class Particle
 {
 public:
-	XMFLOAT3 position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 prev_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
-	XMFLOAT3 velocity = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMVECTORF32 position = { 0.0f, 0.0f, 0.0f };
+	XMVECTORF32 prev_position = { 0.0f, 0.0f, 0.0f };
+	XMVECTORF32 velocity = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 color = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	float lifespan = 3.0f;
 
 	Particle() = default;
-	Particle(XMFLOAT3 pos, XMFLOAT3 prev_pos, XMFLOAT4 vel, XMFLOAT4 col, float life);
+	Particle(XMVECTORF32 pos, XMVECTORF32 prev_pos, XMVECTORF32 vel, XMFLOAT4 col, float life) : position(pos), prev_position(prev_pos), velocity(vel), color(col), lifespan(life) {};
 	~Particle() = default;
 	Particle& operator=(const Particle&) = default;
 };
@@ -99,19 +99,10 @@ class Emitter
 private:
 	XMFLOAT3 em_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
 	sorted_pool_t<Particle, 256> SortedPool;
-	pool_t<Particle, 256> FreePool;
 
 public:
 	Emitter() = default;
 	Emitter(XMFLOAT3 pos);
 	~Emitter() = default;
-	void UpdateParticles(XMFLOAT3 position, XMFLOAT3 velocity, XMFLOAT4 color)
-	{
-		for (size_t i = 0; i < SortedPool.capacity(); i++)
-		{
-			SortedPool[i].position = position;
-			SortedPool[i].velocity = velocity;
-			SortedPool[i].color = color;
-		}
-	};
+
 };

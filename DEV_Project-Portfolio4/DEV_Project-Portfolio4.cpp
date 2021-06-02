@@ -172,10 +172,11 @@ void Update()
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
 	// Particle Emitters
-	XMFLOAT3 newVelocity;
-	newVelocity += XMFLOAT3(0.0f, -1.0f, 0.0f) * gravity * deltaTime;
+	XMVECTORF32 fall = { 0.0f,-1.0f, 0.0f };
+	XMVECTORF32 newVelocity;
+	newVelocity += (fall * gravity * deltaTime);
 	Emitter AlphaEmitter;
-	AlphaEmitter.UpdateParticles();
+	
 };
 
 #pragma region Deployment & Clean Up
