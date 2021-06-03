@@ -163,6 +163,8 @@
     <ClInclude Include="Device.h" />
     <ClInclude Include="DEV_Project-Portfolio4.h" />
     <ClInclude Include="DogKnight.h" />
+    <ClInclude Include="exporter_outline.h" />
+    <ClInclude Include="fnv1a.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Gateware.h" />
     <ClInclude Include="Grid.h" />
@@ -170,6 +172,7 @@
     <ClInclude Include="MeshTools.h" />
     <ClInclude Include="RenderTools.h" />
     <ClInclude Include="Resource.h" />
+    <ClInclude Include="simple_mesh.h" />
     <ClInclude Include="targetver.h" />
     <ClInclude Include="WICTextureLoader.h" />
     <ClInclude Include="Window.h" />
@@ -259,9 +262,11 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
+    <None Include="Mage Assets\BattleMage.fbx" />
     <None Include="Mage Assets\Idle.fbx" />
     <None Include="Mage Assets\Jump.fbx" />
     <None Include="Mage Assets\Run.fbx" />
+    <None Include="Mage Assets\terrain.fbx" />
     <None Include="Mage Assets\Walk.fbx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

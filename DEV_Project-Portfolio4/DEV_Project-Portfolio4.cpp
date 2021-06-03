@@ -13,7 +13,6 @@
 // Forward declarations 
 void CleanupDevice();
 void Render();
-void Update();
 #pragma endregion
 
 // Entry point for the application.

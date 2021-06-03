@@ -16,58 +16,76 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{81eb93e8-b41d-46ae-ad71-cd9d80e197dd}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets">
+    <Filter Include="Mage Assets">
       <UniqueIdentifier>{0dd3d94b-dcd3-4aa5-a9f5-5bda55faad0c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\DEV4 Assets">
+      <UniqueIdentifier>{88dc9352-405d-4420-a8f9-d13f864f024e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Framework">
+      <UniqueIdentifier>{d1120d80-e43e-4794-ab01-f9e4cdc1078b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\D3D11">
+      <UniqueIdentifier>{372cbbeb-9b7e-4353-9bb9-78f0b3ca01b7}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="framework.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="targetver.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="DEV_Project-Portfolio4.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Grid.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="DDSTextureLoader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="Resource.h">
       <Filter>Resource Files</Filter>
-    </ClInclude>
-    <ClInclude Include="RenderTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="MeshTools.h">
-      <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Gateware.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="DogKnight.h">
+    <ClInclude Include="exporter_outline.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="fnv1a.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="simple_mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="DogKnight.h">
+      <Filter>Header Files\DEV4 Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="framework.h">
+      <Filter>Header Files\Framework</Filter>
     </ClInclude>
     <ClInclude Include="Definitions.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="3DContent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Device.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Controls.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Framework</Filter>
     </ClInclude>
     <ClInclude Include="Window.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Device.h">
+      <Filter>Header Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="3DContent.h">
+      <Filter>Header Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="Grid.h">
+      <Filter>Header Files\DEV4 Assets</Filter>
+    </ClInclude>
+    <ClInclude Include="Controls.h">
+      <Filter>Header Files\Framework</Filter>
+    </ClInclude>
+    <ClInclude Include="MeshTools.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="RenderTools.h">
+      <Filter>Header Files\D3D11</Filter>
+    </ClInclude>
+    <ClInclude Include="DDSTextureLoader.h">
+      <Filter>Header Files\D3D11</Filter>
     </ClInclude>
     <ClInclude Include="WICTextureLoader.h">
-      <Filter>Header Files</Filter>
+      <Filter>Header Files\D3D11</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -122,16 +140,22 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Mage Assets\Idle.fbx">
-      <Filter>Assets</Filter>
+      <Filter>Mage Assets</Filter>
     </None>
     <None Include="Mage Assets\Jump.fbx">
-      <Filter>Assets</Filter>
+      <Filter>Mage Assets</Filter>
     </None>
     <None Include="Mage Assets\Run.fbx">
-      <Filter>Assets</Filter>
+      <Filter>Mage Assets</Filter>
     </None>
     <None Include="Mage Assets\Walk.fbx">
-      <Filter>Assets</Filter>
+      <Filter>Mage Assets</Filter>
+    </None>
+    <None Include="Mage Assets\BattleMage.fbx">
+      <Filter>Mage Assets</Filter>
+    </None>
+    <None Include="Mage Assets\terrain.fbx">
+      <Filter>Mage Assets</Filter>
     </None>
   </ItemGroup>
 </Project>
