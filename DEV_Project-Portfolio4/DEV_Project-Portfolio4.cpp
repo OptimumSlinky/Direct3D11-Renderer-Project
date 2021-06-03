@@ -8,6 +8,7 @@
 void CleanupDevice();
 void Render();
 void Update();
+void UpdateParticle();
 #pragma endregion
 
 // Entry point for the application.
@@ -33,6 +34,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance,
 	// Main message loop
 	MSG msg = { 0 };
 	Init3DContent();
+
 	while (WM_QUIT != msg.message)
 	{
 		if (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
@@ -171,11 +173,10 @@ void Update()
 	// Stage 3: Convert updated camera back to View Space
 	g_View = XMMatrixInverse(nullptr, g_Camera);
 
-	// Particle Emitters
-	XMVECTORF32 fall = { 0.0f,-1.0f, 0.0f };
-	XMVECTORF32 newVelocity;
-	newVelocity += (fall * gravity * deltaTime);
-	Emitter AlphaEmitter;
+			
+}
+void UpdateParticle()
+{
 	
 };
 
@@ -248,43 +249,43 @@ void Render()
 	cb.vOutputColor = g_vOutputColor;
 	cb.CameraPosition = cameraPosition;
 
-	// Position and rotate instanced cubes
-	XMMATRIX instanceSpin = XMMatrixRotationY(deltaTime);
-	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
-	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
-	cb.mWorld[1] = instanceSpin * instancePOS1;
-	cb.mWorld[2] = instanceSpin * instancePOS2;
+	//// Position and rotate instanced cubes
+	//XMMATRIX instanceSpin = XMMatrixRotationY(deltaTime);
+	//XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
+	//XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
+	//cb.mWorld[1] = instanceSpin * instancePOS1;
+	//cb.mWorld[2] = instanceSpin * instancePOS2;
 
-	// Render instanced cubes
-	gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	crateShaderMaterials.Bind(gpImmediateContext.Get());
-	crateShaderController.Bind(gpImmediateContext.Get());
-	crateBufferController.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	//// Render instanced cubes
+	//gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	//crateShaderMaterials.Bind(gpImmediateContext.Get());
+	//crateShaderController.Bind(gpImmediateContext.Get());
+	//crateBufferController.Bind(gpImmediateContext.Get());
+	//gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
-	// Update for orbit cube
-	ConstantBuffer cb2;
-	cb2.mWorld[0] = g_OrbitCrate;
-	cb2.mView = g_View;
-	cb2.mProjection = g_Projection;
+	//// Update for orbit cube
+	//ConstantBuffer cb2;
+	//cb2.mWorld[0] = g_OrbitCrate;
+	//cb2.mView = g_View;
+	//cb2.mProjection = g_Projection;
 
-	cb2.vLightPosition[0] = vLightPositions[0];
-	cb2.vLightPosition[1] = vLightPositions[1];
-	cb2.vLightDirection[0] = vLightDirections[0];
-	cb2.vLightDirection[1] = vLightDirections[1];
-	cb2.vLightDirection[2] = vLightDirections[2];
-	cb2.vLightColor[0] = vLightColors[0];
-	cb2.vLightColor[1] = vLightColors[1];
-	cb2.vLightColor[2] = vLightColors[2];
-	cb2.vOutputColor = g_vOutputColor;
-	cb2.CameraPosition = cameraPosition;
+	//cb2.vLightPosition[0] = vLightPositions[0];
+	//cb2.vLightPosition[1] = vLightPositions[1];
+	//cb2.vLightDirection[0] = vLightDirections[0];
+	//cb2.vLightDirection[1] = vLightDirections[1];
+	//cb2.vLightDirection[2] = vLightDirections[2];
+	//cb2.vLightColor[0] = vLightColors[0];
+	//cb2.vLightColor[1] = vLightColors[1];
+	//cb2.vLightColor[2] = vLightColors[2];
+	//cb2.vOutputColor = g_vOutputColor;
+	//cb2.CameraPosition = cameraPosition;
 
-	// Render orbit cube
-	gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
-	crateShaderMaterials.Bind(gpImmediateContext.Get());
-	crateShaderController.Bind(gpImmediateContext.Get());
-	crateBufferController.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(36, 0, 0);
+	//// Render orbit cube
+	//gpImmediateContext->UpdateSubresource(crateShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	//crateShaderMaterials.Bind(gpImmediateContext.Get());
+	//crateShaderController.Bind(gpImmediateContext.Get());
+	//crateBufferController.Bind(gpImmediateContext.Get());
+	//gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Clear the debug grid
 	gridlines.clear();

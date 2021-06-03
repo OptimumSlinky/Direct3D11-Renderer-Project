@@ -3,7 +3,6 @@
 #include <array>
 #include <cassert>
 
-
 template<typename T, int16_t N>
 class sorted_pool_t
 {
@@ -41,7 +40,7 @@ public:
 	{
 		int16_t elementsFree = N - active_count;
 
-		if (elementsFree = > 0)
+		if (elementsFree >= 0)
 		{
 			return -1;
 		}

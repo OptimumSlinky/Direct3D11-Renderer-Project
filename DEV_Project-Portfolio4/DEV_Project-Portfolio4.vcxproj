@@ -159,6 +159,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Gateware.h" />
     <ClInclude Include="Grid.h" />
+    <ClInclude Include="Math_Types.h" />
     <ClInclude Include="MeshTools.h" />
     <ClInclude Include="Pools.h" />
     <ClInclude Include="RenderTools.h" />

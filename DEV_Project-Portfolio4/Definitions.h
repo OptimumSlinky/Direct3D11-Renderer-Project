@@ -9,17 +9,20 @@ using namespace std;
 using Microsoft::WRL::ComPtr;
 
 // Global variables
+const BOOL g_EnableVSync = TRUE;
+const UINT boxCount = 3;
+GW::INPUT::GInput MouseLook;
+
 LPCWSTR g_WindowClassName = L"EngineDev";      // The title bar text
 LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
 LONG g_WindowWidth = 1280;
 LONG g_WindowHeight = 720;
-const BOOL g_EnableVSync = TRUE;
-const UINT boxCount = 3;
-GW::INPUT::GInput MouseLook;
-static float deltaTime = 0.0f;
-float moveScale = 0.0015f;
-XMVECTORF32 gravity = { 0.0f, -9.8f, 0.0f };
+
+XMVECTOR gravity = { 0.0f, -9.8f, 0.0f };
+XMVECTOR fall = { 0.0f, -1.0f, 0.0f };
 float particleLaunchSpeed = 1.0f;
+float moveScale = 0.0015f;
+static float deltaTime = 0.0f;
 
 struct ConstantBuffer
 {
@@ -81,28 +84,27 @@ BufferController<GridVertex> gridBufferController;
 class Particle
 {
 public:
-	XMVECTORF32 position = { 0.0f, 0.0f, 0.0f };
-	XMVECTORF32 prev_position = { 0.0f, 0.0f, 0.0f };
-	XMVECTORF32 velocity = { 0.0f, 0.0f, 0.0f };
+	XMVECTOR position = { 0.0f, 0.0f, 0.0f };
+	XMVECTOR prev_position = { 0.0f, 0.0f, 0.0f };
+	XMVECTOR velocity = { 0.0f, 0.0f, 0.0f };
 	XMFLOAT4 color = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	float lifespan = 3.0f;
 
 	Particle() = default;
-	Particle(XMVECTORF32 pos, XMVECTORF32 prev_pos, XMVECTORF32 vel, XMFLOAT4 col, float life) : position(pos), prev_position(prev_pos), velocity(vel), color(col), lifespan(life) {};
+	Particle(XMVECTOR pos, XMVECTOR prev_pos, XMVECTOR vel, XMFLOAT4 col, float life) : position(pos), prev_position(prev_pos), velocity(vel), color(col), lifespan(life) {};
 	~Particle() = default;
 	Particle& operator=(const Particle&) = default;
 };
 
-
 class Emitter
 {
 private:
-	XMFLOAT3 em_position = XMFLOAT3(0.0f, 0.0f, 0.0f);
+	XMVECTOR em_position = { 0.0f, 0.0f, 0.0f };
 	sorted_pool_t<Particle, 256> SortedPool;
 
 public:
 	Emitter() = default;
-	Emitter(XMFLOAT3 pos);
+	Emitter(XMVECTOR pos) : em_position(pos) {};
 	~Emitter() = default;
 
 };
