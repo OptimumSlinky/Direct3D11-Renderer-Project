@@ -1,5 +1,5 @@
 #pragma once
-#include "Definitions.h"
+#include "Window.h"
 
 // Create Direct3D device and swap chain
 HRESULT InitDevice()

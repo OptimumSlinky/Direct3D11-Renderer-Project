@@ -20,6 +20,9 @@
 #include <directxcolors.h>
 #include "DDSTextureLoader.h" // For texture loading
 
+// FBX 
+#include <fbxsdk.h>
+
 // D3D11 library dependencies
 #pragma comment(lib, "d3d11.lib")
 #pragma comment(lib, "dxgi.lib")

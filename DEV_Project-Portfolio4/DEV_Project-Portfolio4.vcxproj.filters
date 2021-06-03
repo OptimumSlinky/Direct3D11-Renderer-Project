@@ -16,6 +16,9 @@
     <Filter Include="Shaders">
       <UniqueIdentifier>{81eb93e8-b41d-46ae-ad71-cd9d80e197dd}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Assets">
+      <UniqueIdentifier>{0dd3d94b-dcd3-4aa5-a9f5-5bda55faad0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -63,7 +66,7 @@
     <ClInclude Include="Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Pools.h">
+    <ClInclude Include="WICTextureLoader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -72,6 +75,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="DDSTextureLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="WICTextureLoader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -113,5 +119,19 @@
     <FxCompile Include="SKYBOX_PS.hlsl">
       <Filter>Shaders</Filter>
     </FxCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Mage Assets\Idle.fbx">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Mage Assets\Jump.fbx">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Mage Assets\Run.fbx">
+      <Filter>Assets</Filter>
+    </None>
+    <None Include="Mage Assets\Walk.fbx">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
 </Project>
