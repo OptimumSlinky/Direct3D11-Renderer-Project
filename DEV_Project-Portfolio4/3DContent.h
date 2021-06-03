@@ -1,5 +1,6 @@
 #pragma once
 #include "Device.h"
+#include "FBXLoader.h"
 
 HRESULT Init3DContent()
 {
@@ -141,6 +142,35 @@ HRESULT Init3DContent()
 
 	// Sampler state
 	doggoMaterials.CreateDefaultSampler(gpD3D_Device.Get());
+
+	// DEV5 Mage Model
+	// Define mage input layout
+	D3D11_INPUT_ELEMENT_DESC mageLayout[] =
+	{
+
+		{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+		{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+
+	};
+
+	// mage vertex shader and input layout
+	hr = mageShaders.CreateVSandILFromFile(gpD3D_Device.Get(), "MAGE_VS.cso", mageLayout, ARRAYSIZE(mageLayout));
+
+	// mage pixel shader
+	hr = mageShaders.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
+
+	// mage vertex and index buffers
+	hr = mageBuffers.CreateBuffers(gpD3D_Device.Get(), mageIndices, mageVertices);
+
+	// mage constant buffer
+	mageShaders.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
+	mageShaders.PS_ConstantBuffer = mageShaders.VS_ConstantBuffer;
+
+	// mage textures
+
+	// mage sampler state
+	mageMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Initialize skybox raster state variant
 	D3D11_RASTERIZER_DESC skyboxRasterState;

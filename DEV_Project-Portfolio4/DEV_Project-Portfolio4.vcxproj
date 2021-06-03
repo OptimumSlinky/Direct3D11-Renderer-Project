@@ -164,6 +164,7 @@
     <ClInclude Include="DEV_Project-Portfolio4.h" />
     <ClInclude Include="DogKnight.h" />
     <ClInclude Include="exporter_outline.h" />
+    <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="fnv1a.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Gateware.h" />
@@ -190,6 +191,12 @@
     <Image Include="small.ico" />
   </ItemGroup>
   <ItemGroup>
+    <FxCompile Include="MAGE_VS.hlsl">
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Vertex</ShaderType>
+      <ShaderType Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Vertex</ShaderType>
+    </FxCompile>
     <FxCompile Include="MAIN_PS.hlsl">
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Pixel</ShaderType>
       <ShaderType Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Pixel</ShaderType>

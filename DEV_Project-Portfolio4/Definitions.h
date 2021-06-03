@@ -40,6 +40,13 @@ struct GridConstantBuffer
 	XMMATRIX gridProjection;
 };
 
+// Arrays and index for FBX to DX data communication
+SimpleVertex* vertices;
+int numVerts = 0;
+int* indices;
+int numIndices = 0;
+float scale = 1.0f;
+
 // Direct3D global variables
 HINSTANCE               g_hInst = nullptr;
 HWND                    g_hWnd = nullptr;
@@ -91,4 +98,7 @@ BufferController<SimpleVertex> doggoBuffer;
 ShaderController doggoShader;
 ShaderMaterials doggoMaterials;
 
-// 
+// Mage 
+ShaderMaterials mageMaterials;
+ShaderController mageShaders;
+BufferController<SimpleVertex> mageBuffers;
