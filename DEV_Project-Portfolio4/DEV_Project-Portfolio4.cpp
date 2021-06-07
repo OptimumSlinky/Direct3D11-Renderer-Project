@@ -8,7 +8,8 @@
 void CleanupDevice();
 void Render();
 void Update();
-void UpdateParticle();
+void LaunchParticles();
+void UpdateParticle(Particle prtcl, XMVECTOR gravity, XMVECTOR fall, float time);
 #pragma endregion
 
 // Entry point for the application.
@@ -175,10 +176,41 @@ void Update()
 
 			
 }
-void UpdateParticle()
+void LaunchParticles()
 {
-	
-};
+	// Create particles
+	for (size_t i = 0; i < 1024; i++)
+	{
+		FreePool[i].Particle();
+	}
+
+	// Update particles
+	for (size_t i = 0; i < 256; i++)
+	{
+		UpdateParticle(Em1[FreePool[i]], gravity, fall, deltaTime);
+	}
+
+	for (size_t i = 256; i < 511; i++)
+	{
+		UpdateParticle(Em2[FreePool[i]], gravity, fall, deltaTime);
+	}
+
+	for (size_t i = 512; i < 766; i++)
+	{
+		UpdateParticle(Em3[FreePool[i]], gravity, fall, deltaTime);
+	}
+
+	for (size_t i = 767; i < 1023; i++)
+	{
+		UpdateParticle(Em4[FreePool[i]], gravity, fall, deltaTime);
+	}
+
+}
+void UpdateParticle(Particle prtcl, XMVECTOR gravity, XMVECTOR fall, float time)
+{
+	prtcl.velocity += fall * gravity * time;
+	prtcl.position += prtcl.velocity * time;
+}
 
 #pragma region Deployment & Clean Up
 void Render()

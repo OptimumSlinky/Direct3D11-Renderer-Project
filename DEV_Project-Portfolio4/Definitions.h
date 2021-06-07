@@ -81,12 +81,19 @@ ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
 
+// Particles and Pools
+pool_t <Particle, 1024> FreePool;
+Emitter Em1;
+Emitter Em2;
+Emitter Em3;
+Emitter Em4;
+
 class Particle
 {
 public:
 	XMVECTOR position = { 0.0f, 0.0f, 0.0f };
 	XMVECTOR prev_position = { 0.0f, 0.0f, 0.0f };
-	XMVECTOR velocity = { 0.0f, 0.0f, 0.0f };
+	XMVECTOR velocity = { 0.0f, 5.0f, 0.0f };
 	XMFLOAT4 color = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	float lifespan = 3.0f;
 
