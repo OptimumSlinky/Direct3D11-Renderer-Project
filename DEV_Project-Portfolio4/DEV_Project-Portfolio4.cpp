@@ -5,11 +5,17 @@
 #include "3DContent.h"
 
 // Forward declarations 
+pool_t <Particle, 1024> FreePool;
+Emitter Em1;
+Emitter Em2;
+Emitter Em3;
+Emitter Em4;
+
 void CleanupDevice();
 void Render();
 void Update();
-void LaunchParticles();
-void UpdateParticle(Particle prtcl, XMVECTOR gravity, XMVECTOR fall, float time);
+void InitParticles();
+void UpdateParticle(Particle prtcl, XMFLOAT3 gravity, XMFLOAT3 fall, float time);
 #pragma endregion
 
 // Entry point for the application.
@@ -176,40 +182,53 @@ void Update()
 
 			
 }
-void LaunchParticles()
+void InitParticles()
 {
-	// Create particles
-	for (size_t i = 0; i < 1024; i++)
+	// 
+	for (size_t i = 0; i < 5; i++)
 	{
-		FreePool[i].Particle();
-	}
-
-	// Update particles
-	for (size_t i = 0; i < 256; i++)
-	{
-		UpdateParticle(Em1[FreePool[i]], gravity, fall, deltaTime);
-	}
-
-	for (size_t i = 256; i < 511; i++)
-	{
-		UpdateParticle(Em2[FreePool[i]], gravity, fall, deltaTime);
-	}
-
-	for (size_t i = 512; i < 766; i++)
-	{
-		UpdateParticle(Em3[FreePool[i]], gravity, fall, deltaTime);
-	}
-
-	for (size_t i = 767; i < 1023; i++)
-	{
-		UpdateParticle(Em4[FreePool[i]], gravity, fall, deltaTime);
+		// 
+		int16_t fpIndex = FreePool.alloc();
+		if (fpIndex != -1)
+		{
+			int16_t spIndex = Emitter::Emitter
+			if (spIndex != -1)
+			{
+				Particle newParticle;
+				FreePool[fpIndex] = newParticle;
+				Em1.SortedPool[spIndex] = fpIndex;
+			}
+		}
 	}
 
 }
-void UpdateParticle(Particle prtcl, XMVECTOR gravity, XMVECTOR fall, float time)
+void UpdateParticle(Particle prtcl, XMFLOAT3 gravity, XMFLOAT3 fall, float time)
 {
-	prtcl.velocity += fall * gravity * time;
-	prtcl.position += prtcl.velocity * time;
+	// 
+	for (size_t i = 0; i < ; i++)
+	{
+
+	}
+	
+	// XMFLOAT to XMVECTOR loading
+	XMVECTOR xvGravity = XMLoadFloat3(&gravity);
+	XMVECTOR xvFall = XMLoadFloat3(&fall);
+	XMVECTOR xvPrevPos = XMLoadFloat3(&prtcl.prev_position);
+	XMVECTOR xvCurrPos = XMLoadFloat3(&prtcl.position);
+	XMVECTOR xvVeloc = XMLoadFloat3(&prtcl.velocity);
+
+	// Do the movment math
+	xvVeloc += xvFall * xvGravity * time;
+	xvCurrPos += xvVeloc * time;
+
+	// Convert back to XMFLOAT3
+	XMFLOAT3 xfPrevPos; 
+	XMStoreFloat3(&xfPrevPos, xvPrevPos);
+	XMFLOAT3 xfCurrPos; 
+	XMStoreFloat3(&xfCurrPos, xvCurrPos);
+
+	// Draw the result
+	DrawLine(xfPrevPos, xfCurrPos, { 1,1,1,1 });
 }
 
 #pragma region Deployment & Clean Up

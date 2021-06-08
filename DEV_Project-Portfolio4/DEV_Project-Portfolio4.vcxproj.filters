@@ -102,4 +102,12 @@
       <Filter>Shaders</Filter>
     </FxCompile>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="PARTICLE_VS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+    <None Include="PARTICLE_PS.hlsli">
+      <Filter>Shaders</Filter>
+    </None>
+  </ItemGroup>
 </Project>

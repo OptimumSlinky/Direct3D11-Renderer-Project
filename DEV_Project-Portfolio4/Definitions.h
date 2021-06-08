@@ -18,8 +18,8 @@ LPCWSTR g_WindowName = L"RenderingWindow";   // the main window class name
 LONG g_WindowWidth = 1280;
 LONG g_WindowHeight = 720;
 
-XMVECTOR gravity = { 0.0f, -9.8f, 0.0f };
-XMVECTOR fall = { 0.0f, -1.0f, 0.0f };
+XMFLOAT3 gravity = { 0.0f, -9.8f, 0.0f };
+XMFLOAT3 fall = { 0.0f, -1.0f, 0.0f };
 float particleLaunchSpeed = 1.0f;
 float moveScale = 0.0015f;
 static float deltaTime = 0.0f;
@@ -81,24 +81,17 @@ ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
 BufferController<GridVertex> gridBufferController;
 
-// Particles and Pools
-pool_t <Particle, 1024> FreePool;
-Emitter Em1;
-Emitter Em2;
-Emitter Em3;
-Emitter Em4;
-
 class Particle
 {
 public:
-	XMVECTOR position = { 0.0f, 0.0f, 0.0f };
-	XMVECTOR prev_position = { 0.0f, 0.0f, 0.0f };
-	XMVECTOR velocity = { 0.0f, 5.0f, 0.0f };
+	XMFLOAT3 position = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 prev_position = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 velocity = { 0.0f, 5.0f, 0.0f };
 	XMFLOAT4 color = XMFLOAT4(0.0f, 0.0f, 0.0f, 0.0f);
 	float lifespan = 3.0f;
 
 	Particle() = default;
-	Particle(XMVECTOR pos, XMVECTOR prev_pos, XMVECTOR vel, XMFLOAT4 col, float life) : position(pos), prev_position(prev_pos), velocity(vel), color(col), lifespan(life) {};
+	Particle(XMFLOAT3 pos, XMFLOAT3 prev_pos, XMFLOAT3 vel, XMFLOAT4 col, float life) : position(pos), prev_position(prev_pos), velocity(vel), color(col), lifespan(life) {};
 	~Particle() = default;
 	Particle& operator=(const Particle&) = default;
 };
@@ -106,12 +99,12 @@ public:
 class Emitter
 {
 private:
-	XMVECTOR em_position = { 0.0f, 0.0f, 0.0f };
+	XMFLOAT3 em_position = { 0.0f, 0.0f, 0.0f };
 	sorted_pool_t<Particle, 256> SortedPool;
 
 public:
 	Emitter() = default;
-	Emitter(XMVECTOR pos) : em_position(pos) {};
+	Emitter(XMFLOAT3 pos) : em_position(pos) {};
 	~Emitter() = default;
 
 };
