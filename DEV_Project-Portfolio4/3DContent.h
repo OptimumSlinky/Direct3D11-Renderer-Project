@@ -147,34 +147,34 @@ HRESULT Init3DContent()
 	// Mesh for mage vertices
 	SimpleMesh<SimpleVertex> mageMesh;
 
-	// FBX loading
-	// Create FBX manager
-	FbxManager* gFBXsdkManager = FbxManager::Create();
+	//// FBX loading
+	//// Create FBX manager
+	//FbxManager* gFBXsdkManager = FbxManager::Create();
 
-	// Create IOsettings object
-	FbxIOSettings* ioSettings = FbxIOSettings::Create(gFBXsdkManager, IOSROOT);
-	gFBXsdkManager->SetIOSettings(ioSettings);
+	//// Create IOsettings object
+	//FbxIOSettings* ioSettings = FbxIOSettings::Create(gFBXsdkManager, IOSROOT);
+	//gFBXsdkManager->SetIOSettings(ioSettings);
 
-	// Create FBX scene
-	FbxScene* scene_fbxl = FbxScene::Create(gSdkManager, "");
+	//// Create FBX scene
+	//FbxScene* scene_fbxl = FbxScene::Create(gSdkManager, "");
 
-	// Load FBX scene
-	const char* ImportFileName = ".//MageAssets//BattleMage.fbx"; fbxScale = 1.25f;
+	//// Load FBX scene
+	//const char* ImportFileName = ".//MageAssets//BattleMage.fbx"; fbxScale = 1.25f;
 
-	// Create FBX importer
-	FbxImporter* importer_fbxl = FbxImporter::Create(gFBXsdkManager, "");
+	//// Create FBX importer
+	//FbxImporter* importer_fbxl = FbxImporter::Create(gFBXsdkManager, "");
 
-	// Initialize importer with filename
-	const bool ImportStatus_fbxl = importer_fbxl->Initialize(ImportFileName, -1, gFBXsdkManager->GetIOSettings());
+	//// Initialize importer with filename
+	//const bool ImportStatus_fbxl = importer_fbxl->Initialize(ImportFileName, -1, gFBXsdkManager->GetIOSettings());
 
-	// Import FBX scene
-	bool iStatus = importer_fbxl->Import(scene_fbxl);
+	//// Import FBX scene
+	//bool iStatus = importer_fbxl->Import(scene_fbxl);
 
-	// Destroy importer
-	importer_fbxl->Destroy();
+	//// Destroy importer
+	//importer_fbxl->Destroy();
 
-	// Process FBX scene and build DirectX arrays
-	ProcessFBXMesh(scene_fbxl->GetRootNode(),mageMesh);
+	//// Process FBX scene and build DirectX arrays
+	//ProcessFBXMesh(scene_fbxl->GetRootNode(),mageMesh);
 
 	// Define mage input layout
 	D3D11_INPUT_ELEMENT_DESC mageLayout[] =

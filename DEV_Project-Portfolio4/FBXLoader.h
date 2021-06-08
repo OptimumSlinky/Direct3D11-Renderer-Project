@@ -9,7 +9,7 @@ FbxManager* gSdkManager;
 float fbxScale = 50.0f;
 
 // funtime random normal
-#define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
+// #define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
 
 void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
 {
@@ -134,7 +134,7 @@ void ProcessFBXMesh(FbxNode* Node, SimpleMesh<SimpleVertex>& simpleMesh)
 				simpleMesh.vertexList[j].Pos.z = (float)vert.mData[2] / fbxScale;
 
 				// Generate random normal for first attempt at getting to render
-				simpleMesh.vertexList[j].Normal = RAND_NORMAL;
+				// simpleMesh.vertexList[j].Normal = RAND_NORMAL;
 			}
 
 			int numIndices = mesh->GetPolygonVertexCount();
