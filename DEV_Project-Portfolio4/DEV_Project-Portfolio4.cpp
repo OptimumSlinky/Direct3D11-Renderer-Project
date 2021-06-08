@@ -191,7 +191,7 @@ void InitParticles()
 		int16_t fpIndex = FreePool.alloc();
 		if (fpIndex != -1)
 		{
-			int16_t spIndex = Emitter::Emitter
+			int16_t spIndex = Em1.SortedPool.alloc();
 			if (spIndex != -1)
 			{
 				Particle newParticle;
@@ -205,8 +205,9 @@ void InitParticles()
 void UpdateParticle(Particle prtcl, XMFLOAT3 gravity, XMFLOAT3 fall, float time)
 {
 	// 
-	for (size_t i = 0; i < ; i++)
+	for (size_t i = 0; i < Em1.SortedPool.size(); i++)
 	{
+		Particle& newParticle = FreePool[Em1.SortedPool[i]];
 
 	}
 	

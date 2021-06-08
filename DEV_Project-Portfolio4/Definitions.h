@@ -100,9 +100,9 @@ class Emitter
 {
 private:
 	XMFLOAT3 em_position = { 0.0f, 0.0f, 0.0f };
-	sorted_pool_t<Particle, 256> SortedPool;
-
+	
 public:
+	sorted_pool_t<Particle, 256> SortedPool;
 	Emitter() = default;
 	Emitter(XMFLOAT3 pos) : em_position(pos) {};
 	~Emitter() = default;
