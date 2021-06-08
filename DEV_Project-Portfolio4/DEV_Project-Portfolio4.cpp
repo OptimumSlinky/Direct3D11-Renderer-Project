@@ -207,6 +207,14 @@ void Render()
 	doggoBuffer.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(11412, 0, 0);
 
+	// Render mage
+	cb.mWorld[0] = g_Mage;
+	gpImmediateContext->UpdateSubresource(mageShaders.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	mageMaterials.Bind(gpImmediateContext.Get());
+	mageShaders.Bind(gpImmediateContext.Get());
+	mageBuffers.Bind(gpImmediateContext.Get());
+	gpImmediateContext->DrawIndexed(mageMesh.indexList, 0, 0);
+
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();

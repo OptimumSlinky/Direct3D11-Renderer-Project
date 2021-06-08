@@ -76,6 +76,7 @@ XMMATRIX				g_Skybox;
 XMMATRIX                g_World[boxCount];
 XMMATRIX                g_OrbitCrate;
 XMMATRIX                g_Doggo;
+XMMATRIX                g_Mage;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -104,3 +105,6 @@ ShaderMaterials doggoMaterials;
 ShaderMaterials mageMaterials;
 ShaderController mageShaders;
 BufferController<SimpleVertex> mageBuffers;
+
+// Mesh for mage vertices
+SimpleMesh<SimpleVertex> mageMesh;
