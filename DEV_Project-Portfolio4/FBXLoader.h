@@ -1,10 +1,12 @@
 #pragma once
 
-#include "Definitions.h"
+#include "framework.h"
 #include <string>
 
+using namespace std;
+
 FbxManager* gSdkManager;
-float scale = 50.0f;
+float fbxScale = 50.0f;
 
 // funtime random normal
 #define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
@@ -127,9 +129,9 @@ void ProcessFBXMesh(FbxNode* Node, SimpleMesh<SimpleVertex>& simpleMesh)
 			for (int j = 0; j < numVertices; j++)
 			{
 				FbxVector4 vert = mesh->GetControlPointAt(j);
-				simpleMesh.vertexList[j].Pos.x = (float)vert.mData[0] / scale;
-				simpleMesh.vertexList[j].Pos.y = (float)vert.mData[1] / scale;
-				simpleMesh.vertexList[j].Pos.z = (float)vert.mData[2] / scale;
+				simpleMesh.vertexList[j].Pos.x = (float)vert.mData[0] / fbxScale;
+				simpleMesh.vertexList[j].Pos.y = (float)vert.mData[1] / fbxScale;
+				simpleMesh.vertexList[j].Pos.z = (float)vert.mData[2] / fbxScale;
 
 				// Generate random normal for first attempt at getting to render
 				simpleMesh.vertexList[j].Normal = RAND_NORMAL;
@@ -142,8 +144,8 @@ void ProcessFBXMesh(FbxNode* Node, SimpleMesh<SimpleVertex>& simpleMesh)
 			int* indices = mesh->GetPolygonVertices();
 
 			// Fill indiceList
-			simpleMesh.indicesList.resize(numIndices);
-			memcpy(simpleMesh.indicesList.data(), indices, numIndices * sizeof(int));
+			simpleMesh.indexList.resize(numIndices);
+			memcpy(simpleMesh.indexList.data(), indices, numIndices * sizeof(int));
 
 			// Get normals Array from the mesh
 			FbxArray<FbxVector4> normalsVec;
@@ -183,7 +185,7 @@ void ProcessFBXMesh(FbxNode* Node, SimpleMesh<SimpleVertex>& simpleMesh)
 			}
 
 			// copy working data to the global SimpleMesh
-			simpleMesh.indicesList = indicesList;
+			simpleMesh.indexList = indicesList;
 			simpleMesh.vertexList = vertexListExpanded;
 
 			//================= Texture ========================================

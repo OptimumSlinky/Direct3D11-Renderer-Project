@@ -269,12 +269,12 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Mage Assets\BattleMage.fbx" />
-    <None Include="Mage Assets\Idle.fbx" />
-    <None Include="Mage Assets\Jump.fbx" />
-    <None Include="Mage Assets\Run.fbx" />
-    <None Include="Mage Assets\terrain.fbx" />
-    <None Include="Mage Assets\Walk.fbx" />
+    <None Include="MageAssets\BattleMage.fbx" />
+    <None Include="MageAssets\Idle.fbx" />
+    <None Include="MageAssets\Jump.fbx" />
+    <None Include="MageAssets\Run.fbx" />
+    <None Include="MageAssets\terrain.fbx" />
+    <None Include="MageAssets\Walk.fbx" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

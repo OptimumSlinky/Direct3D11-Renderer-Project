@@ -1,4 +1,5 @@
 #pragma once
+
 #include "Window.h"
 
 // Create Direct3D device and swap chain

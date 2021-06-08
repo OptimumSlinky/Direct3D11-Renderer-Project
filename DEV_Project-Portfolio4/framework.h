@@ -12,6 +12,7 @@
 #include <tchar.h>
 #include <fstream>
 #include <vector>
+#include <iostream>
 
 // Direct3D 11 Header Files
 #include <d3d11_1.h>

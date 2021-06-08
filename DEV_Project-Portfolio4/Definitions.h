@@ -1,9 +1,11 @@
 #pragma once
-#include "framework.h"
+
 #include "MeshTools.h"
 #include "Grid.h"
 #include "DogKnight.h"
 #include "RenderTools.h"
+#include "FBXLoader.h"
+
 #define GATEWARE_ENABLE_CORE
 #define GATEWARE_ENABLE_INPUT
 #include "Gateware.h"

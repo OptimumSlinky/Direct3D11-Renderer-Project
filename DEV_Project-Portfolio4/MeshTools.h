@@ -1,4 +1,5 @@
 #pragma once
+
 #include "framework.h"
 
 using namespace DirectX;
@@ -7,15 +8,15 @@ using namespace std;
 // Structures
 struct SimpleVertex
 {
-	XMFLOAT3 position;
-	XMFLOAT2 texture;
-	XMFLOAT3 normal;
+	XMFLOAT3 Pos;
+	XMFLOAT2 Tex;
+	XMFLOAT3 Normal;
 };
 
 template <typename T> struct SimpleMesh
 {
 	vector<T> vertexList;
-	vector<int> indicesList;
+	vector<int> indexList;
 };
 
 SimpleMesh<SimpleVertex> CreateCube()
@@ -63,7 +64,7 @@ SimpleMesh<SimpleVertex> CreateCube()
 	};
 
 	// Cube indices
-	mesh.indicesList =
+	mesh.indexList =
 	{
 		3,1,0,
 		2,1,3,

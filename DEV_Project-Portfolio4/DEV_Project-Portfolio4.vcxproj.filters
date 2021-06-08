@@ -145,22 +145,22 @@
     </FxCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Mage Assets\Idle.fbx">
+    <None Include="MageAssets\BattleMage.fbx">
       <Filter>Mage Assets</Filter>
     </None>
-    <None Include="Mage Assets\Jump.fbx">
+    <None Include="MageAssets\Idle.fbx">
       <Filter>Mage Assets</Filter>
     </None>
-    <None Include="Mage Assets\Run.fbx">
+    <None Include="MageAssets\Jump.fbx">
       <Filter>Mage Assets</Filter>
     </None>
-    <None Include="Mage Assets\Walk.fbx">
+    <None Include="MageAssets\Run.fbx">
       <Filter>Mage Assets</Filter>
     </None>
-    <None Include="Mage Assets\BattleMage.fbx">
+    <None Include="MageAssets\terrain.fbx">
       <Filter>Mage Assets</Filter>
     </None>
-    <None Include="Mage Assets\terrain.fbx">
+    <None Include="MageAssets\Walk.fbx">
       <Filter>Mage Assets</Filter>
     </None>
   </ItemGroup>

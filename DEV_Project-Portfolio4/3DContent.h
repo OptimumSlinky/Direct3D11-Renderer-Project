@@ -1,6 +1,6 @@
 #pragma once
+
 #include "Device.h"
-#include "FBXLoader.h"
 
 HRESULT Init3DContent()
 {
@@ -24,7 +24,7 @@ HRESULT Init3DContent()
 	SimpleMesh<SimpleVertex> skybox = CreateCube();
 
 	// Create skybox vertex buffers
-	skyboxBuffer.CreateBuffers(gpD3D_Device.Get(), skybox.indicesList, skybox.vertexList);
+	skyboxBuffer.CreateBuffers(gpD3D_Device.Get(), skybox.indexList, skybox.vertexList);
 
 	// Create skybox constant buffer
 	skyboxController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
@@ -54,7 +54,7 @@ HRESULT Init3DContent()
 	SimpleMesh<SimpleVertex> crate = CreateCube();
 
 	// Create vertex buffers
-	cubeBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indicesList, crate.vertexList);
+	cubeBufferController.CreateBuffers(gpD3D_Device.Get(), crate.indexList, crate.vertexList);
 
 	// Create constant buffer
 	cubeShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
@@ -95,16 +95,16 @@ HRESULT Init3DContent()
 		SimpleVertex temp;
 
 		// store the data from objvert to simplevertex
-		temp.position.x = DogKnight_data[i].pos[0];
-		temp.position.y = DogKnight_data[i].pos[1];
-		temp.position.z = DogKnight_data[i].pos[2];
+		temp.Pos.x = DogKnight_data[i].pos[0];
+		temp.Pos.y = DogKnight_data[i].pos[1];
+		temp.Pos.z = DogKnight_data[i].pos[2];
 
-		temp.texture.x = DogKnight_data[i].uvw[0];
-		temp.texture.y = DogKnight_data[i].uvw[1];
+		temp.Tex.x = DogKnight_data[i].uvw[0];
+		temp.Tex.y = DogKnight_data[i].uvw[1];
 
-		temp.normal.x = DogKnight_data[i].nrm[0];
-		temp.normal.y = DogKnight_data[i].nrm[1];
-		temp.normal.z = DogKnight_data[i].nrm[2];
+		temp.Normal.x = DogKnight_data[i].nrm[0];
+		temp.Normal.y = DogKnight_data[i].nrm[1];
+		temp.Normal.z = DogKnight_data[i].nrm[2];
 
 		//push into vector
 		doggoVerts.push_back(temp);
@@ -144,6 +144,38 @@ HRESULT Init3DContent()
 	doggoMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// DEV5 Mage Model
+	// Mesh for mage vertices
+	SimpleMesh<SimpleVertex> mageMesh;
+
+	// FBX loading
+	// Create FBX manager
+	FbxManager* gFBXsdkManager = FbxManager::Create();
+
+	// Create IOsettings object
+	FbxIOSettings* ioSettings = FbxIOSettings::Create(gFBXsdkManager, IOSROOT);
+	gFBXsdkManager->SetIOSettings(ioSettings);
+
+	// Create FBX scene
+	FbxScene* scene_fbxl = FbxScene::Create(gSdkManager, "");
+
+	// Load FBX scene
+	const char* ImportFileName = ".//MageAssets//BattleMage.fbx"; fbxScale = 1.25f;
+
+	// Create FBX importer
+	FbxImporter* importer_fbxl = FbxImporter::Create(gFBXsdkManager, "");
+
+	// Initialize importer with filename
+	const bool ImportStatus_fbxl = importer_fbxl->Initialize(ImportFileName, -1, gFBXsdkManager->GetIOSettings());
+
+	// Import FBX scene
+	bool iStatus = importer_fbxl->Import(scene_fbxl);
+
+	// Destroy importer
+	importer_fbxl->Destroy();
+
+	// Process FBX scene and build DirectX arrays
+	ProcessFBXMesh(scene_fbxl->GetRootNode(),mageMesh);
+
 	// Define mage input layout
 	D3D11_INPUT_ELEMENT_DESC mageLayout[] =
 	{
@@ -161,7 +193,7 @@ HRESULT Init3DContent()
 	hr = mageShaders.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
 	// mage vertex and index buffers
-	hr = mageBuffers.CreateBuffers(gpD3D_Device.Get(), mageIndices, mageVertices);
+	hr = mageBuffers.CreateBuffers(gpD3D_Device.Get(), mageMesh.indexList, mageMesh.vertexList);
 
 	// mage constant buffer
 	mageShaders.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(ConstantBuffer));
