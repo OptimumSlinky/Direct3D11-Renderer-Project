@@ -1,4 +1,3 @@
-// Constant buffer
 
 cbuffer ConstantBuffer : register(b0)
 {
@@ -34,12 +33,17 @@ float4 PS_Main(PS_Input input) : SV_Target
     
     // Get Texture Color
     float4 textureColor = diffuseTexture.Sample(linearSampler, input.tex);
+    float4 specularMaterial = specularTexture.Sample(linearSampler, input.tex);
+    float4 emissiveMaterial = emissiveTexture.Sample(linearSampler, input.tex);
     float4 SurfaceSpecColor = float4(1.0f, 1.0f, 1.0f, 1.0f); // For specular calcs; white
             
     // Create outputs for different light implementations
     float4 directionalLight = 0;
     float4 pointLight = 0;
     float4 spotLight = 0;
+
+    // Emissive Lighting
+    float4 emissive = emissiveMaterial;
     
     // Ambient Lighting
     float4 ambientLight = textureColor * 0.50f;
@@ -88,5 +92,6 @@ float4 PS_Main(PS_Input input) : SV_Target
     spotLight.a = 1;
 
     // Send it
-    return saturate(ambientLight + directionalLight + pointLight + spotLight + float4(SpecDLfinal, 0) + float4(SpecPTfinal, 0));
+    //return emissive;
+    return saturate(ambientLight + emissive + directionalLight + pointLight + spotLight + float4(SpecDLfinal, 0) + float4(SpecPTfinal, 0));
 };

@@ -178,12 +178,12 @@ HRESULT Init3DContent()
 	mageShaders.PS_ConstantBuffer = mageShaders.VS_ConstantBuffer;
 
 	// mage textures
-	mageTextureMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageTexture.dds");
+	mageDiffuseMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageTexture.dds");
 	mageSpecularMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageSpecular.dds");
 	mageEmissiveMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageEmissive.dds");
 
 	// mage sampler state
-	mageTextureMaterial.CreateDefaultSampler(gpD3D_Device.Get());
+	mageDiffuseMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 	mageSpecularMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 	mageEmissiveMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 

@@ -96,7 +96,8 @@ void Render()
 	// Place and downsize doggo 
 	XMMATRIX downscaleDoggo = XMMatrixScaling(0.025f, 0.025f, 0.025f);
 	XMMATRIX translateDoggo = XMMatrixTranslation(3.5f, -1.0f, 0.0);
-	g_Doggo = downscaleDoggo * translateDoggo;
+	XMMATRIX rotateDoggo = XMMatrixRotationY(60);
+	g_Doggo = downscaleDoggo * translateDoggo * rotateDoggo;
 
 	//// Place mage
 	//XMMATRIX magePosition = XMMatrixTranslation(-3.5f, 0.0f, 0.0f);
@@ -137,7 +138,7 @@ void Render()
 	skyboxMaterials.Bind(gpImmediateContext.Get());
 	skyboxController.Bind(gpImmediateContext.Get());
 	skyboxBuffer.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	// gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
 	// Reset raster state after drawing skybox
 	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
@@ -216,7 +217,7 @@ void Render()
 	gpImmediateContext->UpdateSubresource(mageShaders.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	mageSpecularMaterial.Bind(gpImmediateContext.Get());
 	mageEmissiveMaterial.Bind(gpImmediateContext.Get());
-	mageTextureMaterial.Bind(gpImmediateContext.Get());
+	mageDiffuseMaterial.Bind(gpImmediateContext.Get());
 	mageShaders.Bind(gpImmediateContext.Get());
 	mageBuffers.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);

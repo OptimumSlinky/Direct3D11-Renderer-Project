@@ -102,7 +102,7 @@ ShaderController doggoShader;
 ShaderMaterials doggoMaterials;
 
 // Mage 
-ShaderMaterials mageTextureMaterial;
+ShaderMaterials mageDiffuseMaterial;
 ShaderMaterials mageSpecularMaterial;
 ShaderMaterials mageEmissiveMaterial;
 ShaderController mageShaders;
