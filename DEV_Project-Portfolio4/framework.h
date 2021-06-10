@@ -20,6 +20,7 @@
 #include <directxmath.h>
 #include <directxcolors.h>
 #include "DDSTextureLoader.h" // For texture loading
+#include "WICTextureLoader.h" // For texture loading
 
 // FBX 
 #include <fbxsdk.h>

@@ -144,37 +144,6 @@ HRESULT Init3DContent()
 	doggoMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// DEV5 Mage Model
-	
-
-	// FBX loading
-	// Create FBX manager
-	FbxManager* gFBXsdkManager = FbxManager::Create();
-
-	// Create IOsettings object
-	FbxIOSettings* ioSettings = FbxIOSettings::Create(gFBXsdkManager, IOSROOT);
-	gFBXsdkManager->SetIOSettings(ioSettings);
-
-	// Create FBX scene
-	FbxScene* scene_fbxl = FbxScene::Create(gSdkManager, "");
-
-	// Load FBX scene
-	const char* ImportFileName = ".//MageAssets//BattleMage.fbx"; fbxScale = 1.25f;
-
-	// Create FBX importer
-	FbxImporter* importer_fbxl = FbxImporter::Create(gFBXsdkManager, "");
-
-	// Initialize importer with filename
-	const bool ImportStatus_fbxl = importer_fbxl->Initialize(ImportFileName, -1, gFBXsdkManager->GetIOSettings());
-
-	// Import FBX scene
-	bool iStatus = importer_fbxl->Import(scene_fbxl);
-
-	// Destroy importer
-	importer_fbxl->Destroy();
-
-	// Process FBX scene and build DirectX arrays
-	ProcessFBXMesh(scene_fbxl->GetRootNode(),mageMesh);
-
 	// Define mage input layout
 	D3D11_INPUT_ELEMENT_DESC mageLayout[] =
 	{
@@ -191,6 +160,16 @@ HRESULT Init3DContent()
 	// mage pixel shader
 	hr = mageShaders.CreatePSFromFile(gpD3D_Device.Get(), "MAIN_PS.cso");
 
+	// FBX loading
+	// Initialize FBX
+	InitFBX();
+
+	// Mage file name
+	std::string mageTexFile;
+
+	// Load FBX
+	LoadFBX(".//MageAssets//BattleMage.fbx", mageMesh, mageTexFile);
+
 	// mage vertex and index buffers
 	hr = mageBuffers.CreateBuffers(gpD3D_Device.Get(), mageMesh.indexList, mageMesh.vertexList);
 
@@ -199,6 +178,7 @@ HRESULT Init3DContent()
 	mageShaders.PS_ConstantBuffer = mageShaders.VS_ConstantBuffer;
 
 	// mage textures
+	mageMaterials.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//BattleMageDDS.dds");
 
 	// mage sampler state
 	mageMaterials.CreateDefaultSampler(gpD3D_Device.Get());

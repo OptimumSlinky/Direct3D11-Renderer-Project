@@ -40,7 +40,7 @@ float4 PS_Main(PS_Input input) : SV_Target
     float4 spotLight = 0;
     
     // Ambient Lighting
-    float4 ambientLight = textureColor * 0.30f;
+    float4 ambientLight = textureColor * 0.50f;
     
     // Directional Lighting 
     float dirLightRatio = saturate(dot(normalize(-vLightDirection[2].xyz), input.normal)); // clamp(dot(-LightDir, SurfaceNormal))

@@ -95,8 +95,12 @@ void Render()
 
 	// Place and downsize doggo 
 	XMMATRIX downscaleDoggo = XMMatrixScaling(0.025f, 0.025f, 0.025f);
-	XMMATRIX translateDoggo = XMMatrixTranslation(3.5, -1.0f, 5.0);
+	XMMATRIX translateDoggo = XMMatrixTranslation(3.5f, -1.0f, 0.0);
 	g_Doggo = downscaleDoggo * translateDoggo;
+
+	//// Place mage
+	//XMMATRIX magePosition = XMMatrixTranslation(-3.5f, 0.0f, 0.0f);
+	//g_Mage = g_Mage * magePosition;
 
 	// Clear the back buffer 
 	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::Black);
@@ -167,37 +171,37 @@ void Render()
 	cb.mWorld[1] = instanceSpin * instancePOS1;
 	cb.mWorld[2] = instanceSpin * instancePOS2;
 
-	// Render instanced cubes
-	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	cubeShaderController.Bind(gpImmediateContext.Get());
-	cubeBufferController.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	//// Render instanced cubes
+	//gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
+	//cubeShaderMaterials.Bind(gpImmediateContext.Get());
+	//cubeShaderController.Bind(gpImmediateContext.Get());
+	//cubeBufferController.Bind(gpImmediateContext.Get());
+	//gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
 
-	// Update for orbit cube
-	ConstantBuffer cb2;
-	cb2.mWorld[0] = g_OrbitCrate;
-	cb2.mView = g_View;
-	cb2.mProjection = g_Projection;
+	//// Update for orbit cube
+	//ConstantBuffer cb2;
+	//cb2.mWorld[0] = g_OrbitCrate;
+	//cb2.mView = g_View;
+	//cb2.mProjection = g_Projection;
 
-	cb2.vLightPosition[0] = vLightPositions[0];
-	cb2.vLightPosition[1] = vLightPositions[1];
-	cb2.vLightDirection[0] = vLightDirections[0];
-	cb2.vLightDirection[1] = vLightDirections[1];
-	cb2.vLightDirection[2] = vLightDirections[2];
-	cb2.vLightColor[0] = vLightColors[0];
-	cb2.vLightColor[1] = vLightColors[1];
-	cb2.vLightColor[2] = vLightColors[2];
-	cb2.vOutputColor = g_vOutputColor;
-	// cb2.CameraPosition = *(XMFLOAT4*)&cameraPosition;
-	cb2.CameraPosition = cameraPosition;
+	//cb2.vLightPosition[0] = vLightPositions[0];
+	//cb2.vLightPosition[1] = vLightPositions[1];
+	//cb2.vLightDirection[0] = vLightDirections[0];
+	//cb2.vLightDirection[1] = vLightDirections[1];
+	//cb2.vLightDirection[2] = vLightDirections[2];
+	//cb2.vLightColor[0] = vLightColors[0];
+	//cb2.vLightColor[1] = vLightColors[1];
+	//cb2.vLightColor[2] = vLightColors[2];
+	//cb2.vOutputColor = g_vOutputColor;
+	//// cb2.CameraPosition = *(XMFLOAT4*)&cameraPosition;
+	//cb2.CameraPosition = cameraPosition;
 
-	// Render orbit cube
-	gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
-	cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	cubeShaderController.Bind(gpImmediateContext.Get());
-	cubeBufferController.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(36, 0, 0);
+	//// Render orbit cube
+	//gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
+	//cubeShaderMaterials.Bind(gpImmediateContext.Get());
+	//cubeShaderController.Bind(gpImmediateContext.Get());
+	//cubeBufferController.Bind(gpImmediateContext.Get());
+	//gpImmediateContext->DrawIndexed(36, 0, 0);
 
 	// Render doggo
 	cb.mWorld[0] = g_Doggo;
@@ -208,12 +212,12 @@ void Render()
 	gpImmediateContext->DrawIndexed(11412, 0, 0);
 
 	// Render mage
-	cb.mWorld[0] = g_Mage;
+	cb.mWorld[0] = XMMatrixIdentity();
 	gpImmediateContext->UpdateSubresource(mageShaders.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
 	mageMaterials.Bind(gpImmediateContext.Get());
 	mageShaders.Bind(gpImmediateContext.Get());
 	mageBuffers.Bind(gpImmediateContext.Get());
-	gpImmediateContext->DrawIndexed(mageMesh.indexList, 0, 0);
+	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);
 
 	// Render gridlines
 	GridConstantBuffer gridCB;

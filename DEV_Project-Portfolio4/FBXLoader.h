@@ -6,10 +6,10 @@
 using namespace std;
 
 FbxManager* gSdkManager;
-float fbxScale = 50.0f;
+float fbxScale = 1.25f;
 
 // funtime random normal
-// #define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
+#define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
 
 void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
 {
