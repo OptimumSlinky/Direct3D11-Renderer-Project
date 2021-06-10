@@ -214,7 +214,9 @@ void Render()
 	// Render mage
 	cb.mWorld[0] = XMMatrixIdentity();
 	gpImmediateContext->UpdateSubresource(mageShaders.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	mageMaterials.Bind(gpImmediateContext.Get());
+	mageSpecularMaterial.Bind(gpImmediateContext.Get());
+	mageEmissiveMaterial.Bind(gpImmediateContext.Get());
+	mageTextureMaterial.Bind(gpImmediateContext.Get());
 	mageShaders.Bind(gpImmediateContext.Get());
 	mageBuffers.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);

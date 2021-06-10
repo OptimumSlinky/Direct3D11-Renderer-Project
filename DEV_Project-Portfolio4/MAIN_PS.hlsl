@@ -13,6 +13,8 @@ cbuffer ConstantBuffer : register(b0)
 }
 
 Texture2D diffuseTexture : register(t0);
+Texture2D specularTexture : register(t1);
+Texture2D emissiveTexture : register(t2);
 SamplerState linearSampler : register(s0);
 
 struct PS_Input

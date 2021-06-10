@@ -178,10 +178,14 @@ HRESULT Init3DContent()
 	mageShaders.PS_ConstantBuffer = mageShaders.VS_ConstantBuffer;
 
 	// mage textures
-	mageMaterials.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//BattleMageDDS.dds");
+	mageTextureMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageTexture.dds");
+	mageSpecularMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageSpecular.dds");
+	mageEmissiveMaterial.CreateTextureFromFile(gpD3D_Device.Get(), ".//MageAssets//MageEmissive.dds");
 
 	// mage sampler state
-	mageMaterials.CreateDefaultSampler(gpD3D_Device.Get());
+	mageTextureMaterial.CreateDefaultSampler(gpD3D_Device.Get());
+	mageSpecularMaterial.CreateDefaultSampler(gpD3D_Device.Get());
+	mageEmissiveMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Initialize skybox raster state variant
 	D3D11_RASTERIZER_DESC skyboxRasterState;

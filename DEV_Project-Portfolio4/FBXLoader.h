@@ -64,7 +64,7 @@ void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
 					//Print out the value of UV(lUVValue) or log it to a file
 					// Copy texture coordinates (already unindexed)
 					UVstorage[uv_Index].Tex.x = lUVValue[0];
-					UVstorage[uv_Index].Tex.y = lUVValue[1];
+					UVstorage[uv_Index].Tex.y = 1 - lUVValue[1];
 					uv_Index++;
 				}
 			}
@@ -91,7 +91,7 @@ void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
 						//Print out the value of UV(lUVValue) or log it to a file
 						// Copy texture coordinates (already unindexed)
 						UVstorage[uv_Index].Tex.x = lUVValue[0];
-						UVstorage[uv_Index].Tex.y = lUVValue[1];
+						UVstorage[uv_Index].Tex.y = 1 - lUVValue[1];
 						uv_Index++;
 						lPolyIndexCounter++;
 					}

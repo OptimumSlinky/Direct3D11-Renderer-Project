@@ -102,7 +102,9 @@ ShaderController doggoShader;
 ShaderMaterials doggoMaterials;
 
 // Mage 
-ShaderMaterials mageMaterials;
+ShaderMaterials mageTextureMaterial;
+ShaderMaterials mageSpecularMaterial;
+ShaderMaterials mageEmissiveMaterial;
 ShaderController mageShaders;
 BufferController<SimpleVertex> mageBuffers;
 
