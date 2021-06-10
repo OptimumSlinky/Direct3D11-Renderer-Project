@@ -222,6 +222,9 @@ void Render()
 	mageBuffers.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);
 
+	// Clear the debug grid
+	gridlines.clear();
+
 	// Render gridlines
 	GridConstantBuffer gridCB;
 	gridCB.gridWorld = XMMatrixIdentity();
