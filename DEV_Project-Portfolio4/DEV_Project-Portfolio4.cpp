@@ -218,7 +218,25 @@ void Render()
 	mageSpecularMaterial.Bind(gpImmediateContext.Get());
 	mageEmissiveMaterial.Bind(gpImmediateContext.Get());
 	mageDiffuseMaterial.Bind(gpImmediateContext.Get());
+	
+	// Create array for texture types
+	ID3D11ShaderResourceView* mageTexArray[3];
+	mageTexArray[0] = mageDiffuseMaterial.ResourceView.Get();
+	mageTexArray[1] = mageSpecularMaterial.ResourceView.Get();
+	mageTexArray[2] = mageEmissiveMaterial.ResourceView.Get();
+	
+	// Set shader 
 	mageShaders.Bind(gpImmediateContext.Get());
+
+	// Set shader resources
+	gpImmediateContext->PSSetShaderResources(0, 3, &mageTexArray[0]);
+
+	// Set sampler state
+	gpImmediateContext->PSSetSamplers(0, 1, mageDiffuseMaterial.SamplerState.GetAddressOf());
+	gpImmediateContext->PSSetSamplers(0, 1, mageSpecularMaterial.SamplerState.GetAddressOf());
+	gpImmediateContext->PSSetSamplers(0, 1, mageEmissiveMaterial.SamplerState.GetAddressOf());
+
+	// Bind buffers
 	mageBuffers.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);
 
