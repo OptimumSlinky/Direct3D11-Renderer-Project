@@ -305,9 +305,89 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 	// Process the scene and build DirectX Arrays
 	ProcessFBXMesh(lScene->GetRootNode(), simpleMesh);
 
+	// Animation
+
+
+
+
 	// Optimize the mesh
 	// MeshUtils::Compactify(simpleMesh);
 
 	// Destroy the (no longer needed) scene
 	lScene->Destroy();
+}
+
+void GetAnimationData(FbxScene* fbxScene)
+{
+	FbxPose* bindPose;
+	int bindIndex;
+
+	int scenePoseCount = fbxScene->GetPoseCount();
+	for (size_t i = 0; i < scenePoseCount; i++)
+	{
+		FbxPose* currentPose = fbxScene->GetPose(i);
+		if (currentPose->IsBindPose())
+		{
+			bindIndex = i;
+			bindPose = currentPose;
+		}
+	}
+
+	int poseCount = bindPose->GetCount();
+	int skeletonRoot;
+	FbxSkeleton* skelly;
+	for (size_t i = 0; i < poseCount; i++)
+	{
+		FbxNode* currentNode = bindPose->GetNode(i);
+		if (currentNode->GetSkeleton() != nullptr)
+		{
+			FbxSkeleton* currentSkelly = currentNode->GetSkeleton();
+			if (currentSkelly->IsSkeletonRoot())
+			{
+				skeletonRoot = i;
+				skelly = currentSkelly;
+			}
+		}
+	}
+
+	struct fbxJoint
+	{
+		FbxNode* node; int parental_index;
+	};
+	std::vector <fbxJoint> JointArray;
+
+	fbxJoint skellyRoot;
+	skellyRoot.node = skelly->GetNode();
+	skellyRoot.parental_index = -1;
+	JointArray.push_back(skellyRoot);
+
+	FbxNode* rootNode = skelly->GetNode();
+	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
+	{
+		fbxJoint currentJoint;
+		FbxNode* currentNode;
+		if (currentNode->GetSkeleton())
+		{
+			currentJoint.node = currentNode->GetChild(i);
+			currentJoint.parental_index = i;
+			JointArray.push_back(currentJoint);
+		}
+	}
+
+	struct actualJoint
+	{
+		float global_transform[16]; int parent_index;
+	};
+	std::vector <actualJoint> ActualJointArray;
+
+	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
+	{
+		actualJoint newJoint;
+		for (size_t i = 0; i < 16; i++)
+		{
+			// Need to get all 16 numbers out of FBX Matrix into float array
+			newJoint.global_transform[i] = JointArray[i].node->EvaluateGlobalTransform();
+		}
+		
+	}
 }
