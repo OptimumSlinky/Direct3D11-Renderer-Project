@@ -8,6 +8,28 @@ using namespace std;
 FbxManager* gSdkManager;
 float fbxScale = 1.25f;
 
+struct fbxJoint
+{
+	FbxNode* node; int parental_index;
+};
+
+struct transformJoint
+{
+	float global_transform[16]; int parent_index;
+};
+
+struct keyframe
+{
+	double time;
+	std::vector <FbxAMatrix> joints;
+};
+
+struct animClip
+{
+	double duration;
+	std::vector <keyframe> frames;
+};
+
 // funtime random normal
 #define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
 
@@ -306,9 +328,7 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 	ProcessFBXMesh(lScene->GetRootNode(), simpleMesh);
 
 	// Animation
-
-
-
+	GetAnimationData(lScene);
 
 	// Optimize the mesh
 	// MeshUtils::Compactify(simpleMesh);
@@ -350,10 +370,6 @@ void GetAnimationData(FbxScene* fbxScene)
 		}
 	}
 
-	struct fbxJoint
-	{
-		FbxNode* node; int parental_index;
-	};
 	std::vector <fbxJoint> JointArray;
 
 	fbxJoint skellyRoot;
@@ -374,20 +390,86 @@ void GetAnimationData(FbxScene* fbxScene)
 		}
 	}
 
-	struct actualJoint
-	{
-		float global_transform[16]; int parent_index;
-	};
-	std::vector <actualJoint> ActualJointArray;
+	std::vector <transformJoint> TransformJointArray;
 
-	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
+	GetMatrixTranforms(rootNode, JointArray, TransformJointArray);
+
+	// Get animation stack
+	FbxAnimStack* animStack = fbxScene->GetCurrentAnimationStack();
+
+	// Get timespan of the animations
+	FbxTimeSpan* timeSpan = &animStack->GetLocalTimeSpan();
+
+	// Get the duration
+	FbxTime duration = timeSpan->GetDuration();
+
+	// Get the number of frames in the animation for the desired time mode
+	long numFrames = duration.GetFrameCount(FbxTime::EMode::eFrames24);
+
+	// Create animation clip to fill
+	animClip baseAnim;
+
+	for (size_t i = 1; i < numFrames - 1; i++)
 	{
-		actualJoint newJoint;
+		keyframe newKF;
+		FbxTime keytime;
+		keytime.SetFrame(numFrames, FbxTime::EMode::eFrames24);
+		newKF.time = keytime.GetSecondCount();
+
+		for (size_t i = 0; i < JointArray.size(); i++)
+		{
+			fbxJoint* currentJoint;
+			currentJoint = &JointArray[i];
+			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime);
+			baseAnim.frames.push_back(newKF);
+		}
+	}
+}
+
+void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transformJoint> xformJoints)
+{
+	for (size_t i = 0; i < node->GetChildCount(); i++)
+	{
+		transformJoint newJoint;
 		for (size_t i = 0; i < 16; i++)
 		{
 			// Need to get all 16 numbers out of FBX Matrix into float array
-			newJoint.global_transform[i] = JointArray[i].node->EvaluateGlobalTransform();
+			//0  1  2  3
+			//0  1  2  3   0
+			//4  5  6  7   1
+			//8  9  10 11  2
+			//12 13 14 15  3
+
+			int width = 4;
+			int row = i / width;
+			int col = i % width;
+			FbxAMatrix nodeMatrix = joints[i].node->EvaluateGlobalTransform();
+			newJoint.global_transform[i] = nodeMatrix[row][col];
+			xformJoints.push_back(newJoint);
 		}
-		
+
+	}
+}
+
+void GetMatrixTranformsKF(FbxNode* node, vector <fbxJoint> joints, keyframe KF, FbxTime time)
+{
+	for (size_t i = 0; i < node->GetChildCount(); i++)
+	{
+		for (size_t i = 0; i < 16; i++)
+		{
+			// Need to get all 16 numbers out of FBX Matrix into float array
+			//0  1  2  3
+			//0  1  2  3   0
+			//4  5  6  7   1
+			//8  9  10 11  2
+			//12 13 14 15  3
+
+			int width = 4;
+			int row = i / width;
+			int col = i % width;
+			FbxAMatrix nodeMatrix = joints[i].node->EvaluateGlobalTransform(time);
+			KF.joints.push_back(nodeMatrix);
+		}
+
 	}
 }
