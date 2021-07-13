@@ -169,6 +169,7 @@
     <ClInclude Include="DEV_Project-Portfolio4.h" />
     <ClInclude Include="DogKnight.h" />
     <ClInclude Include="exporter_outline.h" />
+    <ClInclude Include="FBXExporter.h" />
     <ClInclude Include="FBXLoader.h" />
     <ClInclude Include="fnv1a.h" />
     <ClInclude Include="framework.h" />

@@ -22,7 +22,7 @@ void DrawLine(XMFLOAT3 firstPosition, XMFLOAT3 secondPosition, XMFLOAT4 color)
 }
 
 // Function to draw the full grid 
-void DrawGrid()
+void GenerateGrid()
 {
 	float gridSize = 10.0f;
 	float gridSpacing = 0.5f;

@@ -67,7 +67,7 @@ HRESULT Init3DContent()
 	cubeShaderMaterials.CreateDefaultSampler(gpD3D_Device.Get());
 
 	// Create grid
-	DrawGrid();
+	GenerateGrid();
 
 	// Create grid constant and vertex buffers
 	gridShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(GridConstantBuffer));
@@ -186,6 +186,21 @@ HRESULT Init3DContent()
 	mageDiffuseMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 	mageSpecularMaterial.CreateDefaultSampler(gpD3D_Device.Get());
 	mageEmissiveMaterial.CreateDefaultSampler(gpD3D_Device.Get());
+
+	//// Create skeleton constant and vertex buffers
+	//skeletonShaderController.CreateVSConstantBuffer(gpD3D_Device.Get(), sizeof(GridConstantBuffer));
+	//skeletonBufferController.CreateVertexBuffer(gpD3D_Device.Get(), );
+	//skeletonBufferController.PrimitiveTopology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+
+	//// Create skeleton layout
+	//D3D11_INPUT_ELEMENT_DESC skeletonLayout[] =
+	//{
+	//	{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//	{ "COLOR", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D11_APPEND_ALIGNED_ELEMENT, D3D11_INPUT_PER_VERTEX_DATA, 0 },
+	//};
+
+	//hr = skeletonShaderController.CreateVSandILFromFile(gpD3D_Device.Get(), "GRID_VS.cso", skeletonLayout, ARRAYSIZE(skeletonLayout));
+	//hr = skeletonShaderController.CreatePSFromFile(gpD3D_Device.Get(), "GRID_PS.cso");
 
 	// Initialize skybox raster state variant
 	D3D11_RASTERIZER_DESC skyboxRasterState;

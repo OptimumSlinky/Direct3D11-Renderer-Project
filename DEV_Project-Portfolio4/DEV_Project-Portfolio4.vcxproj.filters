@@ -90,6 +90,9 @@
     <ClInclude Include="FBXLoader.h">
       <Filter>Header Files\D3D11\Framework</Filter>
     </ClInclude>
+    <ClInclude Include="FBXExporter.h">
+      <Filter>Header Files\D3D11\Framework</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DEV_Project-Portfolio4.cpp">

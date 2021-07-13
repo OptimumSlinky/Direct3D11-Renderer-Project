@@ -110,3 +110,8 @@ BufferController<SimpleVertex> mageBuffers;
 
 // Mesh for mage vertices
 SimpleMesh<SimpleVertex> mageMesh;
+
+// Skeleton
+ShaderMaterials skeletonShaderMaterials;
+ShaderController skeletonShaderController;
+BufferController<SimpleVertex> skeletonBufferController;

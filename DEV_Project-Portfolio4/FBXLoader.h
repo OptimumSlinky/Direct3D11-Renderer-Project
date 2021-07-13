@@ -5,6 +5,9 @@
 
 using namespace std;
 
+// funtime random normal
+#define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
+
 FbxManager* gSdkManager;
 float fbxScale = 1.25f;
 
@@ -30,97 +33,8 @@ struct animClip
 	std::vector <keyframe> frames;
 };
 
-// funtime random normal
-#define RAND_NORMAL XMFLOAT3(rand()/float(RAND_MAX),rand()/float(RAND_MAX),rand()/float(RAND_MAX))
-
-void GetAnimationData(FbxScene* fbxScene)
-{
-	FbxPose* bindPose;
-	int bindIndex;
-
-	int scenePoseCount = fbxScene->GetPoseCount();
-	for (size_t i = 0; i < scenePoseCount; i++)
-	{
-		FbxPose* currentPose = fbxScene->GetPose(i);
-		if (currentPose->IsBindPose())
-		{
-			bindIndex = i;
-			bindPose = currentPose;
-		}
-	}
-
-	int poseCount = bindPose->GetCount();
-	int skeletonRoot;
-	FbxSkeleton* skelly;
-	for (size_t i = 0; i < poseCount; i++)
-	{
-		FbxNode* currentNode = bindPose->GetNode(i);
-		if (currentNode->GetSkeleton() != nullptr)
-		{
-			FbxSkeleton* currentSkelly = currentNode->GetSkeleton();
-			if (currentSkelly->IsSkeletonRoot())
-			{
-				skeletonRoot = i;
-				skelly = currentSkelly;
-			}
-		}
-	}
-
-	std::vector <fbxJoint> JointArray;
-
-	fbxJoint skellyRoot;
-	skellyRoot.node = skelly->GetNode();
-	skellyRoot.parental_index = -1;
-	JointArray.push_back(skellyRoot);
-
-	FbxNode* rootNode = skelly->GetNode();
-	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
-	{
-		fbxJoint currentJoint;
-		FbxNode* currentNode;
-		if (currentNode->GetSkeleton())
-		{
-			currentJoint.node = currentNode->GetChild(i);
-			currentJoint.parental_index = i;
-			JointArray.push_back(currentJoint);
-		}
-	}
-
-	std::vector <transformJoint> TransformJointArray;
-
-	GetMatrixTranforms(rootNode, JointArray, TransformJointArray);
-
-	// Get animation stack
-	FbxAnimStack* animStack = fbxScene->GetCurrentAnimationStack();
-
-	// Get timespan of the animations
-	FbxTimeSpan* timeSpan = &animStack->GetLocalTimeSpan();
-
-	// Get the duration
-	FbxTime duration = timeSpan->GetDuration();
-
-	// Get the number of frames in the animation for the desired time mode
-	long numFrames = duration.GetFrameCount(FbxTime::EMode::eFrames24);
-
-	// Create animation clip to fill
-	animClip baseAnim;
-
-	for (size_t i = 1; i < numFrames - 1; i++)
-	{
-		keyframe newKF;
-		FbxTime keytime;
-		keytime.SetFrame(numFrames, FbxTime::EMode::eFrames24);
-		newKF.time = keytime.GetSecondCount();
-
-		for (size_t i = 0; i < JointArray.size(); i++)
-		{
-			fbxJoint* currentJoint;
-			currentJoint = &JointArray[i];
-			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime);
-			baseAnim.frames.push_back(newKF);
-		}
-	}
-}
+std::vector <fbxJoint> JointArray;
+std::vector <transformJoint> TransformJointArray;
 
 void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transformJoint> xformJoints)
 {
@@ -167,6 +81,91 @@ void GetMatrixTranformsKF(FbxNode* node, vector <fbxJoint> joints, keyframe KF, 
 			KF.joints.push_back(nodeMatrix);
 		}
 
+	}
+}
+
+void GetAnimationData(FbxScene* fbxScene)
+{
+	FbxPose* bindPose = nullptr;
+	int bindIndex;
+
+	int scenePoseCount = fbxScene->GetPoseCount();
+	for (size_t i = 0; i < scenePoseCount; i++)
+	{
+		FbxPose* currentPose = fbxScene->GetPose(i);
+		if (currentPose->IsBindPose())
+		{
+			bindIndex = i;
+			bindPose = currentPose;
+		}
+	}
+
+	int poseCount = bindPose->GetCount();
+	int skeletonRoot;
+	FbxSkeleton* skelly = nullptr;
+	for (size_t i = 0; i < poseCount; i++)
+	{
+		FbxNode* currentNode = bindPose->GetNode(i);
+		if (currentNode->GetSkeleton() != nullptr)
+		{
+			FbxSkeleton* currentSkelly = currentNode->GetSkeleton();
+			if (currentSkelly->IsSkeletonRoot())
+			{
+				skeletonRoot = i;
+				skelly = currentSkelly;
+			}
+		}
+	}
+
+	fbxJoint skellyRoot;
+	skellyRoot.node = skelly->GetNode();
+	skellyRoot.parental_index = -1;
+	JointArray.push_back(skellyRoot);
+
+	FbxNode* rootNode = skelly->GetNode();
+	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
+	{
+		fbxJoint currentJoint;
+		FbxNode* currentNode = rootNode;
+		if (currentNode->GetSkeleton())
+		{
+			currentJoint.node = currentNode->GetChild(i);
+			currentJoint.parental_index = i;
+			JointArray.push_back(currentJoint);
+		}
+	}
+
+	//GetMatrixTranforms(rootNode, JointArray, TransformJointArray);
+
+	// Get animation stack
+	FbxAnimStack* animStack = fbxScene->GetCurrentAnimationStack();
+
+	// Get timespan of the animations
+	FbxTimeSpan timeSpan = animStack->GetLocalTimeSpan();
+
+	// Get the duration
+	FbxTime duration = timeSpan.GetDuration();
+
+	// Get the number of frames in the animation for the desired time mode
+	long numFrames = duration.GetFrameCount(FbxTime::EMode::eFrames24);
+
+	// Create animation clip to fill
+	animClip baseAnim;
+
+	for (size_t i = 1; i < numFrames; i++)
+	{
+		keyframe newKF;
+		FbxTime keytime;
+		keytime.SetFrame(numFrames, FbxTime::EMode::eFrames24);
+		newKF.time = keytime.GetSecondCount();
+
+		for (size_t i = 0; i < JointArray.size(); i++)
+		{
+			fbxJoint* currentJoint;
+			currentJoint = &JointArray[i];
+			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime);
+			baseAnim.frames.push_back(newKF);
+		}
 	}
 }
 
@@ -465,7 +464,7 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 	ProcessFBXMesh(lScene->GetRootNode(), simpleMesh);
 
 	// Animation
-	GetAnimationData(lScene);
+	// GetAnimationData(lScene);
 
 	// Optimize the mesh
 	// MeshUtils::Compactify(simpleMesh);
@@ -473,4 +472,5 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 	// Destroy the (no longer needed) scene
 	lScene->Destroy();
 }
+
 

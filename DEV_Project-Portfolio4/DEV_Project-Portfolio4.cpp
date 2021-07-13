@@ -172,38 +172,6 @@ void Render()
 	cb.mWorld[1] = instanceSpin * instancePOS1;
 	cb.mWorld[2] = instanceSpin * instancePOS2;
 
-	//// Render instanced cubes
-	//gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
-	//cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	//cubeShaderController.Bind(gpImmediateContext.Get());
-	//cubeBufferController.Bind(gpImmediateContext.Get());
-	//gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
-
-	//// Update for orbit cube
-	//ConstantBuffer cb2;
-	//cb2.mWorld[0] = g_OrbitCrate;
-	//cb2.mView = g_View;
-	//cb2.mProjection = g_Projection;
-
-	//cb2.vLightPosition[0] = vLightPositions[0];
-	//cb2.vLightPosition[1] = vLightPositions[1];
-	//cb2.vLightDirection[0] = vLightDirections[0];
-	//cb2.vLightDirection[1] = vLightDirections[1];
-	//cb2.vLightDirection[2] = vLightDirections[2];
-	//cb2.vLightColor[0] = vLightColors[0];
-	//cb2.vLightColor[1] = vLightColors[1];
-	//cb2.vLightColor[2] = vLightColors[2];
-	//cb2.vOutputColor = g_vOutputColor;
-	//// cb2.CameraPosition = *(XMFLOAT4*)&cameraPosition;
-	//cb2.CameraPosition = cameraPosition;
-
-	//// Render orbit cube
-	//gpImmediateContext->UpdateSubresource(cubeShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &cb2, 0, 0);
-	//cubeShaderMaterials.Bind(gpImmediateContext.Get());
-	//cubeShaderController.Bind(gpImmediateContext.Get());
-	//cubeBufferController.Bind(gpImmediateContext.Get());
-	//gpImmediateContext->DrawIndexed(36, 0, 0);
-
 	// Render doggo
 	cb.mWorld[0] = g_Doggo;
 	gpImmediateContext->UpdateSubresource(doggoShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
