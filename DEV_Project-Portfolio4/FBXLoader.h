@@ -38,7 +38,7 @@ std::vector <transformJoint> TransformJointArray;
 
 void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transformJoint> xformJoints)
 {
-	for (size_t i = 0; i < node->GetChildCount(); i++)
+	for (size_t child = 0; child < node->GetChildCount(); child++)
 	{
 		transformJoint newJoint;
 		for (size_t i = 0; i < 16; i++)
@@ -53,8 +53,8 @@ void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transfor
 			int width = 4;
 			int row = i / width;
 			int col = i % width;
-			FbxAMatrix nodeMatrix = joints[i].node->EvaluateGlobalTransform();
-			newJoint.global_transform[i] = nodeMatrix[row][col];
+			FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform();
+			newJoint.global_transform[child] = nodeMatrix[row][col];
 			xformJoints.push_back(newJoint);
 		}
 
@@ -63,7 +63,7 @@ void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transfor
 
 void GetMatrixTranformsKF(FbxNode* node, vector <fbxJoint> joints, keyframe KF, FbxTime time)
 {
-	for (size_t i = 0; i < node->GetChildCount(); i++)
+	for (size_t child = 0; child < node->GetChildCount(); child++)
 	{
 		for (size_t i = 0; i < 16; i++)
 		{
@@ -77,7 +77,7 @@ void GetMatrixTranformsKF(FbxNode* node, vector <fbxJoint> joints, keyframe KF, 
 			int width = 4;
 			int row = i / width;
 			int col = i % width;
-			FbxAMatrix nodeMatrix = joints[i].node->EvaluateGlobalTransform(time);
+			FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform(time);
 			KF.joints.push_back(nodeMatrix);
 		}
 
@@ -163,7 +163,7 @@ void GetAnimationData(FbxScene* fbxScene)
 		{
 			fbxJoint* currentJoint;
 			currentJoint = &JointArray[i];
-			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime);
+			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime); // Crashes here
 			baseAnim.frames.push_back(newKF);
 		}
 	}
@@ -464,7 +464,7 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 	ProcessFBXMesh(lScene->GetRootNode(), simpleMesh);
 
 	// Animation
-	// GetAnimationData(lScene);
+	GetAnimationData(lScene);
 
 	// Optimize the mesh
 	// MeshUtils::Compactify(simpleMesh);
