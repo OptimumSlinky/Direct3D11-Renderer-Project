@@ -82,27 +82,13 @@ void Render()
 		XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f), // g -> spotlight
 		XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f), // b -> directional light
 	};
-
-	// Spin first cube around the origin
-	g_World[0] = XMMatrixRotationY(t);
-
-	// Orbit second cube around the origin
-	XMMATRIX spin = XMMatrixRotationZ(-t);
-	XMMATRIX orbit = XMMatrixRotationY(-t * 1.0f);
-	XMMATRIX translate = XMMatrixTranslation(-3.0f, 0, 0);
-	XMMATRIX downscale = XMMatrixScaling(0.3f, 0.3f, 0.3f);
-	g_OrbitCrate = downscale * spin * translate * orbit;
-
+	
 	// Place and downsize doggo 
 	XMMATRIX downscaleDoggo = XMMatrixScaling(0.025f, 0.025f, 0.025f);
-	XMMATRIX translateDoggo = XMMatrixTranslation(3.5f, -1.0f, 0.0);
+	XMMATRIX translateDoggo = XMMatrixTranslation(3.5f, 0.0f, 0.0);
 	XMMATRIX rotateDoggo = XMMatrixRotationY(60);
 	g_Doggo = downscaleDoggo * translateDoggo * rotateDoggo;
-
-	//// Place mage
-	//XMMATRIX magePosition = XMMatrixTranslation(-3.5f, 0.0f, 0.0f);
-	//g_Mage = g_Mage * magePosition;
-
+		
 	// Clear the back buffer 
 	gpImmediateContext->ClearRenderTargetView(gpRenderTargetView.Get(), Colors::Black);
 
@@ -121,7 +107,7 @@ void Render()
 	gpImmediateContext->RSSetState(gpSkyboxRasterState.Get());
 
 	// Draw skybox
-	ConstantBuffer skyCB;
+	/*ConstantBuffer skyCB;
 	skyCB.mWorld[0] = g_Skybox;
 	skyCB.mView = g_View;
 	skyCB.mProjection = g_Projection;
@@ -138,7 +124,7 @@ void Render()
 	skyboxMaterials.Bind(gpImmediateContext.Get());
 	skyboxController.Bind(gpImmediateContext.Get());
 	skyboxBuffer.Bind(gpImmediateContext.Get());
-	// gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);
+	gpImmediateContext->DrawIndexedInstanced(36, 3, 0, 0, 0);*/
 
 	// Reset raster state after drawing skybox
 	// gpImmediateContext->RSSetState(nullptr); // disables skybox raster setting WITHOUT deleting it; returns rasterizer to the default state!!
@@ -164,14 +150,7 @@ void Render()
 	cb.vLightColor[2] = vLightColors[2];
 	cb.vOutputColor = g_vOutputColor;
 	cb.CameraPosition = cameraPosition;
-
-	// Position and rotate instanced cubes
-	XMMATRIX instanceSpin = XMMatrixRotationY(t);
-	XMMATRIX instancePOS1 = XMMatrixTranslation(4.0f, 2.0f, -1.0f);
-	XMMATRIX instancePOS2 = XMMatrixTranslation(-3.0f, 3.5f, 4.0f);
-	cb.mWorld[1] = instanceSpin * instancePOS1;
-	cb.mWorld[2] = instanceSpin * instancePOS2;
-
+	
 	// Render doggo
 	cb.mWorld[0] = g_Doggo;
 	gpImmediateContext->UpdateSubresource(doggoShader.VS_ConstantBuffer.Get(), 0, nullptr, &cb, 0, 0);
@@ -207,6 +186,18 @@ void Render()
 	// Bind buffers
 	mageBuffers.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(mageMesh.indexList.size(),0,0);
+
+	// Clear debug skeleton
+	skeletonBones.clear();
+
+	//  Render debug skeleton
+	GridConstantBuffer skelCB;
+	skelCB.gridWorld = XMMatrixTranslation(3.5f, 0.0f, 0.0);
+	skelCB.gridView = g_View;
+	skelCB.gridProjection = g_Projection;
+	gpImmediateContext->UpdateSubresource(skeletonShaderController.VS_ConstantBuffer.Get(), 0, nullptr, &skelCB, 0, 0);
+	skeletonShaderController.Bind(gpImmediateContext.Get());
+	skeletonBufferController.BindAndDraw(gpImmediateContext.Get());
 
 	// Clear the debug grid
 	gridlines.clear();

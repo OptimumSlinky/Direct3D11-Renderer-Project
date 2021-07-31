@@ -77,6 +77,7 @@ XMMATRIX                g_World[boxCount];
 XMMATRIX                g_OrbitCrate;
 XMMATRIX                g_Doggo;
 XMMATRIX                g_Mage;
+XMMATRIX				g_DebugSkeleton;
 XMMATRIX                g_View;
 XMMATRIX                g_Projection;
 XMFLOAT4				g_vOutputColor(0.7f, 0.7f, 0.7f, 1.0f);
@@ -94,7 +95,7 @@ BufferController<SimpleVertex> cubeBufferController;
 // Grid
 ShaderMaterials gridShaderMaterials;
 ShaderController gridShaderController;
-BufferController<GridVertex> gridBufferController;
+BufferController<DebugVertex> gridBufferController;
 
 // Dog Knight
 BufferController<SimpleVertex> doggoBuffer;
@@ -114,4 +115,4 @@ SimpleMesh<SimpleVertex> mageMesh;
 // Skeleton
 ShaderMaterials skeletonShaderMaterials;
 ShaderController skeletonShaderController;
-BufferController<SimpleVertex> skeletonBufferController;
+BufferController<DebugVertex> skeletonBufferController;

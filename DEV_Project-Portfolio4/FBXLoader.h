@@ -36,73 +36,125 @@ struct animClip
 std::vector <fbxJoint> JointArray;
 std::vector <transformJoint> TransformJointArray;
 
-void GetMatrixTranforms(FbxNode* node, vector <fbxJoint> joints, vector<transformJoint> xformJoints)
+FbxPose* GetBindPose(FbxScene* scene, FbxPose* bindpose, bool posefound)
 {
-	for (size_t child = 0; child < node->GetChildCount(); child++)
+	// Create variables for bind pose capture and get the pose count
+	FbxPose* bindPose = nullptr;
+	int scenePoseCount = scene->GetPoseCount();
+
+	// Check each pose to determine if its the bind pose and set 
+	while (posefound == false)
 	{
-		transformJoint newJoint;
-		for (size_t i = 0; i < 16; i++)
+		for (size_t i = 0; i < scenePoseCount; i++)
 		{
-			// Need to get all 16 numbers out of FBX Matrix into float array
-			//0  1  2  3
-			//0  1  2  3   0
-			//4  5  6  7   1
-			//8  9  10 11  2
-			//12 13 14 15  3
-
-			int width = 4;
-			int row = i / width;
-			int col = i % width;
-			FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform();
-			newJoint.global_transform[child] = nodeMatrix[row][col];
-			xformJoints.push_back(newJoint);
+			FbxPose* currentPose = scene->GetPose(i);
+			if (currentPose->IsBindPose())
+			{
+				bindPose = currentPose;
+				posefound = true;
+			}
 		}
+	}
+	return bindPose;
+}
 
+FbxSkeleton* GetSkeletonRoot(FbxPose* bindpose, FbxSkeleton* skeleton, bool foundskelroot)
+{
+	int poseCount = bindpose->GetCount();
+	for (size_t i = 0; i < poseCount; i++)
+	{
+		FbxNode* currentNode = bindpose->GetNode(i);
+		if (currentNode->GetSkeleton() != nullptr)
+		{
+			FbxSkeleton* currentSkelly = currentNode->GetSkeleton();
+			if (currentSkelly->IsSkeletonRoot())
+			{
+				skeleton = currentSkelly;
+				foundskelroot = true;
+			}
+		}
+	}
+	return skeleton;
+}
+
+void GetSkeletonHierarchyRecursively(FbxNode* entryNode, int currentIndex, int parentIndex)
+{
+	fbxJoint currentJoint;
+	if (entryNode->GetSkeleton())
+	{
+		currentJoint.parental_index = parentIndex;
+		currentJoint.node = entryNode;
+		JointArray.push_back(currentJoint);
+	}
+
+	for (int i = 0; i < entryNode->GetChildCount(); i++)
+	{
+		GetSkeletonHierarchyRecursively(entryNode->GetChild(i), JointArray.size(), -1);
 	}
 }
 
-void GetMatrixTranformsKF(FbxNode* node, vector <fbxJoint> joints, keyframe KF, FbxTime time)
+void GetMatrixTranforms(vector <fbxJoint>& joints, vector<transformJoint>& xformJoints)
 {
-	for (size_t child = 0; child < node->GetChildCount(); child++)
-	{
-		for (size_t i = 0; i < 16; i++)
-		{
-			// Need to get all 16 numbers out of FBX Matrix into float array
+	// Need to get all 16 numbers out of FBX Matrix into float array
 			//0  1  2  3
 			//0  1  2  3   0
 			//4  5  6  7   1
 			//8  9  10 11  2
 			//12 13 14 15  3
 
-			int width = 4;
-			int row = i / width;
-			int col = i % width;
-			FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform(time);
-			KF.joints.push_back(nodeMatrix);
-		}
+	transformJoint newJoint;
+	int width = 4;
 
+	for (int child = 0; child < joints.size(); child++)
+	{
+		
+		FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform();
+
+		for (int i = 0; i < 16; i++)
+		{
+			int row = i / width;
+			int col = i % width; 
+			newJoint.global_transform[i] = nodeMatrix[row][col];
+			newJoint.parent_index = joints[child].parental_index;
+		}
+		xformJoints.push_back(newJoint);
+	}
+}
+
+void GetMatrixTranformsKF(vector <fbxJoint> joints, keyframe KF, FbxTime time)
+{
+	for (size_t child = 0; child < joints.size(); child++)
+	{
+		FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform(time);
+		KF.joints.push_back(nodeMatrix);
 	}
 }
 
 void GetAnimationData(FbxScene* fbxScene)
 {
+	// Create variables for bind pose capture and get the pose count
 	FbxPose* bindPose = nullptr;
-	int bindIndex;
-
+	bool foundBindPose = false;
 	int scenePoseCount = fbxScene->GetPoseCount();
-	for (size_t i = 0; i < scenePoseCount; i++)
+
+	// Check each pose to determine if its the bind pose and set 
+	while (foundBindPose == false)
 	{
-		FbxPose* currentPose = fbxScene->GetPose(i);
-		if (currentPose->IsBindPose())
+		for (size_t i = 0; i < scenePoseCount; i++)
 		{
-			bindIndex = i;
-			bindPose = currentPose;
+			FbxPose* currentPose = fbxScene->GetPose(i);
+			if (currentPose->IsBindPose())
+			{
+				bindPose = currentPose;
+				foundBindPose = true;
+			}
 		}
 	}
 
+	// Find the root of the skeleton for the fbx joint hierarchy
+	bool foundSkelRoot = false;
+	FbxSkeleton* skeletonRoot = nullptr;
 	int poseCount = bindPose->GetCount();
-	int skeletonRoot;
-	FbxSkeleton* skelly = nullptr;
 	for (size_t i = 0; i < poseCount; i++)
 	{
 		FbxNode* currentNode = bindPose->GetNode(i);
@@ -111,31 +163,37 @@ void GetAnimationData(FbxScene* fbxScene)
 			FbxSkeleton* currentSkelly = currentNode->GetSkeleton();
 			if (currentSkelly->IsSkeletonRoot())
 			{
-				skeletonRoot = i;
-				skelly = currentSkelly;
+				skeletonRoot = currentSkelly;
+				foundSkelRoot = true;
+			}
+		}
+	}
+		
+	// Create a dynamic array of FbxNode* paired with parent indices
+	fbxJoint rootJoint;
+	rootJoint.node = skeletonRoot->GetNode();
+	rootJoint.parental_index = -1;
+	JointArray.push_back(rootJoint);
+
+	// Get skeleton children
+	for (int i = 0; i < JointArray.size(); i++)
+	{
+		int numChildren = JointArray[i].node->GetChildCount();
+
+		for (int child = 0; child < numChildren; child++)
+		{
+			FbxNode* currentChild = JointArray[i].node->GetChild(child);
+			if (currentChild->GetSkeleton())
+			{
+				fbxJoint newJoint;
+				newJoint.node = currentChild;
+				newJoint.parental_index = i;
+				JointArray.push_back(newJoint);
 			}
 		}
 	}
 
-	fbxJoint skellyRoot;
-	skellyRoot.node = skelly->GetNode();
-	skellyRoot.parental_index = -1;
-	JointArray.push_back(skellyRoot);
-
-	FbxNode* rootNode = skelly->GetNode();
-	for (size_t i = 0; i < rootNode->GetChildCount(); i++)
-	{
-		fbxJoint currentJoint;
-		FbxNode* currentNode = rootNode;
-		if (currentNode->GetSkeleton())
-		{
-			currentJoint.node = currentNode->GetChild(i);
-			currentJoint.parental_index = i;
-			JointArray.push_back(currentJoint);
-		}
-	}
-
-	//GetMatrixTranforms(rootNode, JointArray, TransformJointArray);
+	GetMatrixTranforms(JointArray, TransformJointArray);
 
 	// Get animation stack
 	FbxAnimStack* animStack = fbxScene->GetCurrentAnimationStack();
@@ -158,15 +216,16 @@ void GetAnimationData(FbxScene* fbxScene)
 		FbxTime keytime;
 		keytime.SetFrame(numFrames, FbxTime::EMode::eFrames24);
 		newKF.time = keytime.GetSecondCount();
+		fbxJoint* currentJoint;
 
 		for (size_t i = 0; i < JointArray.size(); i++)
 		{
-			fbxJoint* currentJoint;
 			currentJoint = &JointArray[i];
-			GetMatrixTranformsKF(currentJoint->node, JointArray, newKF, keytime); // Crashes here
+			GetMatrixTranformsKF(JointArray, newKF, keytime); 
 			baseAnim.frames.push_back(newKF);
 		}
 	}
+
 }
 
 void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
@@ -465,9 +524,6 @@ void LoadFBX(const std::string& filename, SimpleMesh<SimpleVertex>& simpleMesh, 
 
 	// Animation
 	GetAnimationData(lScene);
-
-	// Optimize the mesh
-	// MeshUtils::Compactify(simpleMesh);
 
 	// Destroy the (no longer needed) scene
 	lScene->Destroy();
