@@ -22,6 +22,53 @@ void UpdateTime()
 	}
 }
 
+void UpdateAnimations()
+{
+	for (int currentFrame = 0; currentFrame < mageAnimations.frames.size(); currentFrame++)
+	{
+		// Move to next animation frame
+		if (GetAsyncKeyState('2') && currentFrame <= mageAnimations.frames.size())
+		{
+			++currentFrame;
+			std::vector<transformJoint> nextPose;
+			FbxAMatrix keyframeMatrix = mageAnimations.frames[currentFrame].joints[currentFrame];
+			int width = 4;
+			transformJoint newJoint;
+
+			for (int m = 0; m < 16; m++)
+			{
+				int row = m / width;
+				int col = m % width;
+				newJoint.global_transform[m] = keyframeMatrix[row][col];
+				newJoint.parent_index = TransformJointArray[currentFrame].parent_index;
+			}
+			nextPose.push_back(newJoint);
+			GenerateBonesFromTransforms(nextPose);
+		}
+
+		if (GetAsyncKeyState('1') && currentFrame >= 1)
+		{
+			// Move to previous animation frame
+			--currentFrame;
+			std::vector<transformJoint> prevPose;
+			FbxAMatrix keyframeMatrix = mageAnimations.frames[currentFrame].joints[currentFrame];
+			int width = 4;
+			transformJoint newJoint;
+
+			for (int m = 0; m < 16; m++)
+			{
+				int row = m / width;
+				int col = m % width;
+				newJoint.global_transform[m] = keyframeMatrix[row][col];
+				newJoint.parent_index = TransformJointArray[currentFrame].parent_index;
+			}
+			prevPose.push_back(newJoint);
+			GenerateBonesFromTransforms(prevPose);
+		}
+
+	}
+}
+
 void UpdateCamera()
 {
 	if (GetAsyncKeyState('W'))
