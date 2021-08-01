@@ -190,6 +190,9 @@ void Render()
 	// Clear debug skeleton
 	skeletonBones.clear();
 
+	// Update animation positioning
+	UpdateAnimations();
+
 	//  Render debug skeleton
 	GridConstantBuffer skelCB;
 	skelCB.gridWorld = XMMatrixTranslation(3.5f, 0.0f, 0.0);

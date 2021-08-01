@@ -8,7 +8,7 @@ using namespace std;
 // Grid vertex structure
 struct DebugVertex
 {
-	XMFLOAT3 debugPos;
+	XMFLOAT3 position;
 	XMFLOAT4 color;
 };
 
@@ -38,15 +38,35 @@ void GenerateBonesFromTransforms(std::vector<transformJoint>& transformArray)
 		
 		if (transformArray[i].parent_index != -1)
 		{
-			newPoint.debugPos = { transformArray[i].global_transform[12], transformArray[i].global_transform[13], transformArray[i].global_transform[14] };
+			newPoint.position = { transformArray[i].global_transform[12], transformArray[i].global_transform[13], transformArray[i].global_transform[14] };
 			newPoint.color = { 1.0f, 1.0f, 1.0f, 1.0f };
-			parent.debugPos = { transformArray[transformArray[i].parent_index].global_transform[12],
+			parent.position = { transformArray[transformArray[i].parent_index].global_transform[12],
 								transformArray[transformArray[i].parent_index].global_transform[13],
 								transformArray[transformArray[i].parent_index].global_transform[14] };
 			parent.color = { 1.0f, 1.0f, 1.0f, 1.0f };
 
-			AddBone(newPoint.debugPos, parent.debugPos, newPoint.color, parent.color);
+			AddBone(newPoint.position, parent.position, newPoint.color, parent.color);
 		}
+	}
+}
+
+void GenerateTriads(std::vector <DebugVertex> bones)
+{
+	//RGB Triad for joints
+	DebugVertex xAxis, yAxis, zAxis;
+	xAxis.color = { 1.0f, 0.0f, 0.0f, 1.0f };
+	yAxis.color = { 0.0f, 1.0f, 0.0f, 1.0f };
+	zAxis.color = { 0.0f, 0.0f, 1.0f, 1.0f };
+
+	for (int i = 0; i < bones.size(); i++)
+	{
+		xAxis.position = { 1.0f, 0.0f, 0.0f };
+		yAxis.position = { 0.0f, 1.0f, 0.0f };
+		zAxis.position = { 0.0f, 0.0f, 1.0f };
+		
+		AddBone(bones[i].position, xAxis.position, xAxis.color, xAxis.color);
+		AddBone(bones[i].position, yAxis.position, yAxis.color, yAxis.color);
+		AddBone(bones[i].position, zAxis.position, zAxis.color, zAxis.color);
 	}
 }
 

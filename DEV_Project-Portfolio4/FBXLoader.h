@@ -2,6 +2,7 @@
 
 #include "framework.h"
 #include <string>
+#include "Grid.h"
 
 using namespace std;
 
@@ -35,6 +36,7 @@ struct animClip
 
 std::vector <fbxJoint> JointArray;
 std::vector <transformJoint> TransformJointArray;
+animClip mageAnimations;
 
 FbxPose* GetBindPose(FbxScene* scene, FbxPose* bindpose, bool posefound)
 {
@@ -107,13 +109,13 @@ void GetMatrixTranforms(vector <fbxJoint>& joints, vector<transformJoint>& xform
 
 	for (int child = 0; child < joints.size(); child++)
 	{
-		
+
 		FbxAMatrix nodeMatrix = joints[child].node->EvaluateGlobalTransform();
 
 		for (int i = 0; i < 16; i++)
 		{
 			int row = i / width;
-			int col = i % width; 
+			int col = i % width;
 			newJoint.global_transform[i] = nodeMatrix[row][col];
 			newJoint.parent_index = joints[child].parental_index;
 		}
@@ -121,7 +123,7 @@ void GetMatrixTranforms(vector <fbxJoint>& joints, vector<transformJoint>& xform
 	}
 }
 
-void GetMatrixTranformsKF(vector <fbxJoint> joints, keyframe KF, FbxTime time)
+void GetMatrixTranformsKF(vector <fbxJoint>& joints, keyframe KF, FbxTime time)
 {
 	for (size_t child = 0; child < joints.size(); child++)
 	{
@@ -168,7 +170,7 @@ void GetAnimationData(FbxScene* fbxScene)
 			}
 		}
 	}
-		
+
 	// Create a dynamic array of FbxNode* paired with parent indices
 	fbxJoint rootJoint;
 	rootJoint.node = skeletonRoot->GetNode();
@@ -207,10 +209,10 @@ void GetAnimationData(FbxScene* fbxScene)
 	// Get the number of frames in the animation for the desired time mode
 	long numFrames = duration.GetFrameCount(FbxTime::EMode::eFrames24);
 
-	// Create animation clip to fill
-	animClip baseAnim;
+	//// Create animation clip to fill
+	//animClip mageAnimations;
 
-	for (size_t i = 1; i < numFrames; i++)
+	for (size_t i = 1; i < numFrames; i++) // start at 1 to skip bind pose
 	{
 		keyframe newKF;
 		FbxTime keytime;
@@ -221,11 +223,59 @@ void GetAnimationData(FbxScene* fbxScene)
 		for (size_t i = 0; i < JointArray.size(); i++)
 		{
 			currentJoint = &JointArray[i];
-			GetMatrixTranformsKF(JointArray, newKF, keytime); 
-			baseAnim.frames.push_back(newKF);
+			GetMatrixTranformsKF(JointArray, newKF, keytime);
+			mageAnimations.frames.push_back(newKF);
 		}
 	}
 
+}
+
+void UpdateAnimations()
+{
+
+	for (int i = 1; i < mageAnimations.frames.size(); i++)
+	{
+		// Move to next animation frame
+		if (GetAsyncKeyState('2'))
+		{
+			++i;
+			std::vector<transformJoint> nextPose;
+			FbxAMatrix keyframeMatrix = mageAnimations.frames[i].joints[i];
+			int width = 4;
+			transformJoint newJoint;
+
+			for (int m = 0; m < 16; m++)
+			{
+				int row = i / width;
+				int col = i % width;
+				newJoint.global_transform[i] = keyframeMatrix[row][col];
+				// newJoint.parent_index = mageAnimations.frames[i].joints[i];
+			}
+			nextPose.push_back(newJoint);
+			GenerateBonesFromTransforms(nextPose);
+		}
+
+		if (GetAsyncKeyState('1'))
+		{
+			// Move to previous animation frame
+			--i;
+			std::vector<transformJoint> prevPose;
+			FbxAMatrix keyframeMatrix = mageAnimations.frames[i].joints[i];
+			int width = 4;
+			transformJoint newJoint;
+
+			for (int m = 0; m < 16; m++)
+			{
+				int row = i / width;
+				int col = i % width;
+				newJoint.global_transform[i] = keyframeMatrix[row][col];
+				// newJoint.parent_index = mageAnimations.frames[i].joints[i];
+			}
+			prevPose.push_back(newJoint);
+			GenerateBonesFromTransforms(prevPose);
+		}
+		
+	}
 }
 
 void LoadUVInformation(FbxMesh* pMesh, vector<SimpleVertex>& UVstorage)
