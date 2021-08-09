@@ -55,7 +55,9 @@ HRESULT InitDevice()
 	if (FAILED(hr))
 		return hr;
 
-	// Obtain DXGI factory from device (since we used nullptr for pAdapter above)
+	// Obtain 
+	
+	factory from device (since we used nullptr for pAdapter above)
 	IDXGIFactory1* dxgiFactory = nullptr;
 	{
 		IDXGIDevice* dxgiDevice = nullptr;
