@@ -13,7 +13,6 @@
 // Forward declarations 
 void CleanupDevice();
 void Render();
-void Update();
 #pragma endregion
 
 // Entry point for the application.
@@ -207,6 +206,9 @@ void Render()
 	doggoShader.Bind(gpImmediateContext.Get());
 	doggoBuffer.Bind(gpImmediateContext.Get());
 	gpImmediateContext->DrawIndexed(11412, 0, 0);
+
+	// Clear the debug grid
+	gridlines.clear();
 
 	// Render gridlines
 	GridConstantBuffer gridCB;
